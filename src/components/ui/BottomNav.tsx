@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { BarChart3, CalendarDays, Home, Package } from 'lucide-react'
+import { BarChart3, CalendarDays, Home, Package, Settings } from 'lucide-react'
 
 const links = [
   { to: '/', label: 'Inicio', icon: Home, end: true },
   { to: '/calendario', label: 'Calendario', icon: CalendarDays },
   { to: '/productos', label: 'Productos', icon: Package },
   { to: '/ingresos', label: 'Ingresos', icon: BarChart3 },
+  { to: '/ajustes', label: 'Ajustes', icon: Settings },
 ]
 
 export function BottomNav() {
@@ -18,14 +19,14 @@ export function BottomNav() {
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
+              `flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors ${
                 isActive ? 'text-brand' : 'text-sub dark:text-d-sub'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <Icon size={21} strokeWidth={isActive ? 2.4 : 2} />
+                <Icon size={20} strokeWidth={isActive ? 2.4 : 2} />
                 {label}
               </>
             )}

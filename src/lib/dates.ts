@@ -101,6 +101,36 @@ export function formatShortDate(d: Date): string {
   return `${d.getDate()} ${MONTHS_ES[d.getMonth()].slice(0, 3)}`
 }
 
+/** "Buenos días" / "Buenas tardes" / "Buenas noches" según la hora. */
+export function greetingForHour(d: Date = new Date()): string {
+  const h = d.getHours()
+  if (h < 12) return 'Buenos días'
+  if (h < 20) return 'Buenas tardes'
+  return 'Buenas noches'
+}
+
+/**
+ * Frase de fecha relativa para Inicio:
+ *   hoy   → "Hoy es viernes, 30 de mayo"
+ *   ayer  → "Ayer fue jueves, 29 de mayo"
+ *   mañana→ "Mañana será sábado, 31 de mayo"
+ *   otros → "Sábado, 7 de junio"
+ */
+export function formatRelativeDate(d: Date): string {
+  const today = new Date()
+  const tk = toKey(today)
+  const dk = toKey(d)
+  const yk = toKey(addDays(today, -1))
+  const mk = toKey(addDays(today, 1))
+  const wd = WEEKDAYS_ES[(d.getDay() + 6) % 7]
+  const wdCap = wd.charAt(0).toUpperCase() + wd.slice(1)
+  const rest = `${d.getDate()} de ${MONTHS_ES[d.getMonth()]}`
+  if (dk === tk) return `Hoy es ${wd}, ${rest}`
+  if (dk === yk) return `Ayer fue ${wd}, ${rest}`
+  if (dk === mk) return `Mañana será ${wd}, ${rest}`
+  return `${wdCap}, ${rest}`
+}
+
 // Resolve a Period selection into an explicit DateRange (anchored to a ref date).
 export function periodRange(period: Period, ref: Date, custom?: DateRange): DateRange {
   switch (period) {

@@ -8,9 +8,10 @@ const links = [
   { to: '/calendario', label: 'Calendario', icon: CalendarDays },
   { to: '/productos', label: 'Productos', icon: Package },
   { to: '/ingresos', label: 'Ingresos', icon: BarChart3 },
+  { to: '/ajustes', label: 'Ajustes', icon: Settings },
 ]
 
-export function Sidebar({ onOpenSettings }: { onOpenSettings: () => void }) {
+export function Sidebar() {
   return (
     <aside className="hidden md:flex w-60 shrink-0 flex-col border-r hairline bg-card/60 dark:bg-d-card/40 backdrop-blur px-4 py-6 sticky top-0 h-screen">
       <div className="flex items-center gap-2.5 px-2 mb-8">
@@ -42,14 +43,7 @@ export function Sidebar({ onOpenSettings }: { onOpenSettings: () => void }) {
         ))}
       </nav>
 
-      <div className="mt-auto flex items-center justify-between px-1">
-        <button
-          onClick={onOpenSettings}
-          className="flex items-center gap-2 rounded-xl px-2 py-2 text-sm text-sub transition-colors hover:bg-black/5 dark:text-d-sub dark:hover:bg-white/5"
-        >
-          <Settings size={18} />
-          Ajustes
-        </button>
+      <div className="mt-auto flex items-center justify-end px-1">
         <ThemeToggle />
       </div>
     </aside>

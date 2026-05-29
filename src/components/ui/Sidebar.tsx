@@ -14,11 +14,11 @@ export function Sidebar({ onOpenSettings }: { onOpenSettings: () => void }) {
   return (
     <aside className="hidden md:flex w-60 shrink-0 flex-col border-r hairline bg-card/60 dark:bg-d-card/40 backdrop-blur px-4 py-6 sticky top-0 h-screen">
       <div className="flex items-center gap-2.5 px-2 mb-8">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-accent text-white">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-            <path d="M9 7l8 5-8 5z" />
-          </svg>
-        </div>
+        <img
+          src="./icon-192.png"
+          alt=""
+          className="h-9 w-9 rounded-xl object-cover shadow-soft"
+        />
         <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
       </div>
 

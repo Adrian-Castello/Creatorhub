@@ -2,14 +2,43 @@
 <html lang="es" class="">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#8B5CF6" />
-    <meta name="description" content="Creatorhub — Dashboard personal para afiliados de TikTok Shop" />
-    <link rel="manifest" href="./manifest.webmanifest" />
     <title>Creatorhub</title>
+    <meta name="description" content="Creatorhub — Dashboard personal para afiliados de TikTok Shop." />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png" />
+    <link rel="shortcut icon" href="./favicon.ico" />
+
+    <!-- iOS: añadir a pantalla de inicio -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Creatorhub" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#FAFAFA" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0A0A0B" media="(prefers-color-scheme: dark)" />
+
+    <!-- Open Graph (WhatsApp, Telegram, Facebook, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Creatorhub — TikTok Shop dashboard" />
+    <meta property="og:description" content="Trackea vídeos, productos y ventas como afiliado de TikTok Shop." />
+    <meta property="og:image" content="./icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Creatorhub — TikTok Shop dashboard" />
+    <meta name="twitter:description" content="Trackea vídeos, productos y ventas como afiliado de TikTok Shop." />
+    <meta name="twitter:image" content="./icon-512.png" />
+
     <script>
-      // Apply theme before paint to avoid flash.
+      // Bootstrap the theme class before React renders to prevent FOUC.
       (function () {
         try {
           var t = localStorage.getItem('creatorhub-theme') || 'system';

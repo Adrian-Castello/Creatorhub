@@ -78,7 +78,7 @@ export const COLOR_LEVELS: { light: string; dark: string }[] = [
   { light: '#86EFAC', dark: '#166534' }, // 3 — medio (verde claro)
   { light: '#4ADE80', dark: '#15803D' }, // 4 — alto (verde medio)
   { light: '#22C55E', dark: '#16A34A' }, // 5 — top (verde fuerte)
-  { light: '#FACC15', dark: '#A16207' }, // 6 — premium / día increíble (amarillo dorado)
+  { light: '#FCD34D', dark: '#CA8A04' }, // 6 — premium / día increíble (amarillo dorado vibrante)
 ]
 
 export const DEFAULT_VIDEO_GOAL = 5

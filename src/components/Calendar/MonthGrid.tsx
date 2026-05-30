@@ -46,7 +46,7 @@ export function MonthGrid({
         ))}
       </div>
 
-      <div className="overflow-hidden">
+      <div className="overflow-hidden px-1 -mx-1 py-1 -my-1">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={monthKey}

@@ -458,7 +458,7 @@ function SaleRow({
           />
         </label>
         <label className="flex h-10 flex-1 items-center gap-1.5 rounded-lg surface px-2.5 focus-within:border-brand/60">
-          <span className="text-[10px] uppercase tracking-wide text-muted">GMV €</span>
+          <span className="text-[10px] uppercase tracking-wide text-muted">GMV</span>
           <input
             type="number"
             min={0}

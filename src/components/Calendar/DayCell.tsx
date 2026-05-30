@@ -17,6 +17,7 @@ interface Props {
   dayViews: DayView[]
   mode: CalendarMode
   isDark: boolean
+  selectedKey: string | null
   onOpen: (key: string) => void
 }
 
@@ -41,11 +42,14 @@ export function DayCell({
   dayViews,
   mode,
   isDark,
+  selectedKey,
   onOpen,
 }: Props) {
   const key = toKey(date)
   const inMonth = date.getMonth() === monthAnchor.getMonth()
   const isToday = key === todayKey()
+  // El anillo lo lleva el día seleccionado (o, si no hay selección, el día de hoy).
+  const isHighlighted = selectedKey ? key === selectedKey : isToday
 
   const totals = dayTotals(key, sales, products, videos)
   const dayTotalViews = dayViews
@@ -81,7 +85,7 @@ export function DayCell({
       className={`relative flex aspect-square flex-col rounded-xl border p-1.5 text-left transition-all sm:p-2 ${
         bg ? 'border-transparent' : 'surface'
       } ${inMonth ? '' : 'opacity-35'} ${
-        isToday ? 'ring-2 ring-brand shadow-glow' : ''
+        isHighlighted ? 'ring-2 ring-brand shadow-glow' : ''
       }`}
       style={bg ? { backgroundColor: bg } : undefined}
     >

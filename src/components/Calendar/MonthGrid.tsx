@@ -13,6 +13,7 @@ interface Props {
   dayViews: DayView[]
   mode: CalendarMode
   isDark: boolean
+  selectedKey: string | null
   onOpenDay: (key: string) => void
 }
 
@@ -26,6 +27,7 @@ export function MonthGrid({
   dayViews,
   mode,
   isDark,
+  selectedKey,
   onOpenDay,
 }: Props) {
   const days = monthGridDays(monthAnchor)
@@ -67,6 +69,7 @@ export function MonthGrid({
                 dayViews={dayViews}
                 mode={mode}
                 isDark={isDark}
+                selectedKey={selectedKey}
                 onOpen={onOpenDay}
               />
             ))}

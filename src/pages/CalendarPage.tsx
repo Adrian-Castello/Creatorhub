@@ -1,6 +1,5 @@
 import { useMemo, useState, useRef } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { CalendarCheck, ChevronLeft, ChevronRight, Eye, Film, TrendingUp, X } from 'lucide-react'
+import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react'
 import { MonthGrid } from '../components/Calendar/MonthGrid'
 import { DayModal } from '../components/Calendar/DayModal'
 import type { CalendarMode } from '../components/Calendar/DayCell'
@@ -29,30 +28,64 @@ export function CalendarPage() {
   const [anchor, setAnchor] = useState(() => new Date())
   const [direction, setDirection] = useState(0)
   const [mode, setMode] = useState<CalendarMode>('publicaciones')
-  const [dayKey, setDayKey] = useState<string | null>(null)        // modal abierto
-  const [previewKey, setPreviewKey] = useState<string | null>(null) // panel inline
+  const [dayKey, setDayKey] = useState<string | null>(null)              // modal abierto
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)    // día con anillo / KPIs
   const clickRef = useRef<{ key: string; t: number } | null>(null)
 
+  const isCurrentMonth =
+    anchor.getFullYear() === new Date().getFullYear() &&
+    anchor.getMonth() === new Date().getMonth()
+
+  // Datos del mes (default)
   const monthRange = useMemo(
     () => ({ from: startOfMonth(anchor), to: endOfMonth(anchor) }),
     [anchor],
   )
-  const totals = rangeTotals(sales, videos, products, monthRange)
-  const monthViews = useMemo(() => {
-    return dayViews
-      .filter((v) => {
-        const d = fromKey(v.day_date)
-        return d >= monthRange.from && d <= monthRange.to
-      })
-      .reduce((a, v) => a + v.views, 0)
-  }, [dayViews, monthRange])
+  const monthTotals = rangeTotals(sales, videos, products, monthRange)
+  const monthViews = useMemo(
+    () =>
+      dayViews
+        .filter((v) => {
+          const d = fromKey(v.day_date)
+          return d >= monthRange.from && d <= monthRange.to
+        })
+        .reduce((a, v) => a + v.views, 0),
+    [dayViews, monthRange],
+  )
+
+  // Datos del día seleccionado (overrides en los KPIs)
+  const dayData = useMemo(() => {
+    if (!selectedKey) return null
+    const t = dayTotals(selectedKey, sales, products, videos)
+    const v = dayViews
+      .filter((x) => x.day_date === selectedKey)
+      .reduce((a, x) => a + x.views, 0)
+    return { ...t, views: v }
+  }, [selectedKey, sales, products, videos, dayViews])
+
+  // Mostrar en KPIs (mes o día)
+  const showing = dayData
+    ? {
+        title: capitalize(formatLongDate(fromKey(selectedKey!))),
+        videos: dayData.videos,
+        views: dayData.views,
+        gmv: dayData.gmv,
+        commission: dayData.commission,
+      }
+    : {
+        title: formatMonthYear(anchor),
+        videos: monthTotals.videos,
+        views: monthViews,
+        gmv: monthTotals.gmv,
+        commission: monthTotals.commission,
+      }
 
   function go(delta: number) {
     setDirection(delta)
     setAnchor((a) => addMonths(a, delta))
+    setSelectedKey(null) // al cambiar de mes, deseleccionar
   }
 
-  // Click vs doble-click: si dos clics en <350ms sobre el mismo día -> modal
   function handleCellClick(key: string) {
     const now = Date.now()
     const prev = clickRef.current
@@ -63,28 +96,15 @@ export function CalendarPage() {
       return
     }
     clickRef.current = { key, t: now }
-    setPreviewKey((cur) => (cur === key ? null : key))
+    // toggle: si vuelves a clicar el mismo día, deseleccionas
+    setSelectedKey((cur) => (cur === key ? null : key))
   }
-
-  // Datos del día seleccionado para el panel inline
-  const previewData = useMemo(() => {
-    if (!previewKey) return null
-    const t = dayTotals(previewKey, sales, products, videos)
-    const views = dayViews
-      .filter((v) => v.day_date === previewKey)
-      .reduce((a, v) => a + v.views, 0)
-    return { ...t, views }
-  }, [previewKey, sales, products, videos, dayViews])
-
-  const isCurrentMonth =
-    anchor.getFullYear() === new Date().getFullYear() &&
-    anchor.getMonth() === new Date().getMonth()
 
   return (
     <div className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          {formatMonthYear(anchor)}
+          {showing.title}
         </h1>
 
         <div className="flex items-center gap-1.5">
@@ -107,6 +127,7 @@ export function CalendarPage() {
               onClick={() => {
                 setDirection(0)
                 setAnchor(new Date())
+                setSelectedKey(null)
               }}
               aria-label="Volver al mes actual"
               title="Volver al mes actual"
@@ -118,12 +139,12 @@ export function CalendarPage() {
         </div>
       </header>
 
-      {/* KPIs del mes */}
+      {/* KPIs: del mes por defecto, del día si hay uno seleccionado */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiTile label="Vídeos" value={num(totals.videos)} />
-        <KpiTile label="Visualizaciones" value={num(monthViews)} />
-        <KpiTile label="GMV" value={eur(totals.gmv)} accent="text-brand" />
-        <KpiTile label="Comisión" value={eur(totals.commission)} accent="text-accent" />
+        <KpiTile label="Vídeos" value={num(showing.videos)} />
+        <KpiTile label="Visualizaciones" value={num(showing.views)} />
+        <KpiTile label="GMV" value={eur(showing.gmv)} accent="text-brand" />
+        <KpiTile label="Comisión" value={eur(showing.commission)} accent="text-accent" />
       </div>
 
       <MonthGrid
@@ -136,10 +157,11 @@ export function CalendarPage() {
         dayViews={dayViews}
         mode={mode}
         isDark={isDark}
+        selectedKey={selectedKey}
         onOpenDay={handleCellClick}
       />
 
-      {/* Segmented control Publicaciones / Monetización (debajo del calendario) */}
+      {/* Segmented control Publicaciones / Monetización */}
       <div className="flex w-full rounded-full surface p-1">
         {MODES.map((m) => (
           <button
@@ -156,99 +178,11 @@ export function CalendarPage() {
         ))}
       </div>
 
-      {/* Panel inline al clicar un día */}
-      <AnimatePresence>
-        {previewData && previewKey && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -6, height: 0 }}
-            transition={{ duration: 0.22 }}
-            className="overflow-hidden"
-          >
-            <div className="surface rounded-2xl p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-muted">
-                    Detalle del día
-                  </div>
-                  <div className="text-base font-semibold capitalize">
-                    {formatLongDate(fromKey(previewKey))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setDayKey(previewKey)}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-brand transition-colors hover:bg-brand/10"
-                  >
-                    Editar día
-                  </button>
-                  <button
-                    onClick={() => setPreviewKey(null)}
-                    aria-label="Cerrar"
-                    className="rounded-lg p-1.5 text-muted transition-colors hover:bg-black/5 dark:hover:bg-white/5"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <Stat label="Vídeos" value={num(previewData.videos)} icon={Film} />
-                <Stat
-                  label="Visualizaciones"
-                  value={num(previewData.views)}
-                  icon={Eye}
-                />
-                <Stat
-                  label="GMV"
-                  value={eur(previewData.gmv)}
-                  icon={TrendingUp}
-                  accent="text-brand"
-                />
-                <Stat
-                  label="Comisión"
-                  value={eur(previewData.commission)}
-                  icon={TrendingUp}
-                  accent="text-accent"
-                />
-              </div>
-              <p className="mt-3 text-[11px] text-muted">
-                Doble clic en cualquier día para abrir directamente.
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <DayModal
         open={dayKey !== null}
         dayKey={dayKey}
         onClose={() => setDayKey(null)}
       />
-    </div>
-  )
-}
-
-function Stat({
-  label,
-  value,
-  icon: Icon,
-  accent,
-}: {
-  label: string
-  value: string
-  icon: any
-  accent?: string
-}) {
-  return (
-    <div className="rounded-xl border hairline p-3">
-      <div className="mb-1 flex items-center justify-between">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-muted">
-          {label}
-        </span>
-        <Icon size={14} className="text-muted" />
-      </div>
-      <div className={`text-lg font-bold tnum ${accent ?? ''}`}>{value}</div>
     </div>
   )
 }
@@ -270,4 +204,8 @@ function KpiTile({
       </div>
     </div>
   )
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }

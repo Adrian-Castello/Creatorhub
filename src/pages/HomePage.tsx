@@ -38,8 +38,27 @@ export function HomePage() {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-3">
-        {/* Flechas arriba a la izquierda */}
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        {/* Saludo + fecha relativa */}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            {greeting}{name ? `, ${name}` : ''}
+          </h1>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={selectedKey}
+              initial={{ opacity: 0, x: direction * 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction * -16 }}
+              transition={{ duration: 0.22 }}
+              className="mt-1 text-sm text-muted"
+            >
+              {dateLine}
+            </motion.p>
+          </AnimatePresence>
+        </div>
+
+        {/* Flechas a la derecha */}
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => goDay(-1)}
@@ -65,25 +84,6 @@ export function HomePage() {
               <CalendarCheck size={18} />
             </button>
           )}
-        </div>
-
-        {/* Saludo + fecha relativa */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {greeting}{name ? `, ${name}` : ''}
-          </h1>
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={selectedKey}
-              initial={{ opacity: 0, x: direction * 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: direction * -16 }}
-              transition={{ duration: 0.22 }}
-              className="mt-1 text-sm text-muted"
-            >
-              {dateLine}
-            </motion.p>
-          </AnimatePresence>
         </div>
       </header>
 

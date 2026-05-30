@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react'
 import { DayKpis } from '../components/Home/DayKpis'
 import { DayQuickActions } from '../components/Home/DayQuickActions'
 import { DayModal } from '../components/Calendar/DayModal'
-import { Button } from '../components/ui/Button'
 import { SkeletonCard } from '../components/ui/Skeleton'
 import { useData } from '../hooks/useData'
 import {
@@ -32,9 +31,43 @@ export function HomePage() {
     setSelectedKey((cur) => toKey(addDays(fromKey(cur), delta)))
   }
 
+  function goToday() {
+    setDirection(0)
+    setSelectedKey(todayKey())
+  }
+
   return (
     <div className="space-y-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <header className="space-y-3">
+        {/* Flechas arriba a la izquierda */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => goDay(-1)}
+            aria-label="Día anterior"
+            className="flex h-9 w-9 items-center justify-center rounded-xl surface transition-colors hover:border-brand/40"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            onClick={() => goDay(1)}
+            aria-label="Día siguiente"
+            className="flex h-9 w-9 items-center justify-center rounded-xl surface transition-colors hover:border-brand/40"
+          >
+            <ChevronRight size={18} />
+          </button>
+          {!isToday && (
+            <button
+              onClick={goToday}
+              aria-label="Volver a hoy"
+              title="Volver a hoy"
+              className="flex h-9 w-9 items-center justify-center rounded-xl surface text-brand transition-all hover:border-brand/40 hover:scale-105"
+            >
+              <CalendarCheck size={18} />
+            </button>
+          )}
+        </div>
+
+        {/* Saludo + fecha relativa */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             {greeting}{name ? `, ${name}` : ''}
@@ -51,35 +84,6 @@ export function HomePage() {
               {dateLine}
             </motion.p>
           </AnimatePresence>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => goDay(-1)}
-            aria-label="Día anterior"
-            className="flex h-10 w-10 items-center justify-center rounded-xl surface transition-colors hover:border-brand/40"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          {!isToday && (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setDirection(0)
-                setSelectedKey(todayKey())
-              }}
-            >
-              Hoy
-            </Button>
-          )}
-          <button
-            onClick={() => goDay(1)}
-            aria-label="Día siguiente"
-            className="flex h-10 w-10 items-center justify-center rounded-xl surface transition-colors hover:border-brand/40"
-          >
-            <ChevronRight size={18} />
-          </button>
         </div>
       </header>
 

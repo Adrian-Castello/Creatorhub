@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, Plus, Trash2 } from 'lucide-react'
+import { Check, ImagePlus, Plus, Trash2 } from 'lucide-react'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
-import { ProductSelect } from '../ui/Select'
+import { ProductPickerModal } from '../ui/ProductPickerModal'
 import { Confetti } from '../ui/Confetti'
 import { useData } from '../../hooks/useData'
 import { fromKey, formatLongDate } from '../../lib/dates'
 import { saleCommission } from '../../lib/calculations'
+import { STATUS_COLORS } from '../../lib/constants'
 import { eur } from '../../lib/format'
 import type { Product } from '../../lib/types'
 
@@ -36,7 +37,8 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   const goal = settings.daily_video_goal
   const [noteText, setNoteText] = useState('')
   const [confettiFire, setConfettiFire] = useState(0)
-  const [addingSale, setAddingSale] = useState(false)
+  const [salePickerOpen, setSalePickerOpen] = useState(false)
+  const [videoPickerSlot, setVideoPickerSlot] = useState<number | null>(null)
   const prevCompleted = useRef(0)
   const noteRef = useRef<HTMLTextAreaElement>(null)
 
@@ -173,16 +175,30 @@ export function DayModal({ open, dayKey, onClose }: Props) {
                       )}
                     </AnimatePresence>
                   </button>
-                  <span className="text-sm font-medium">Vídeo {slot}</span>
+                  <span className="flex-1 text-sm font-medium">Vídeo {slot}</span>
                   {checked && (
-                    <div className="ml-auto w-44 sm:w-56">
-                      <ProductSelect
-                        products={products}
-                        value={video?.product_id ?? null}
-                        onChange={(pid) => setVideo(dayKey!, slot, pid)}
-                        placeholder="Producto (opcional)"
-                      />
-                    </div>
+                    <button
+                      onClick={() => setVideoPickerSlot(slot)}
+                      title={video?.product_id ? productMap.get(video.product_id)?.name : 'Asignar producto'}
+                      aria-label="Asignar producto"
+                      className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl surface transition-all hover:border-brand/40 hover:scale-105"
+                    >
+                      {video?.product_id && productMap.get(video.product_id)?.image_url ? (
+                        <>
+                          <img
+                            src={productMap.get(video.product_id)!.image_url!}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                          <span
+                            className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card dark:ring-d-card"
+                            style={{ backgroundColor: STATUS_COLORS[productMap.get(video.product_id)!.status] }}
+                          />
+                        </>
+                      ) : (
+                        <ImagePlus size={18} className="text-muted" />
+                      )}
+                    </button>
                   )}
                 </motion.div>
               )
@@ -199,7 +215,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
             <Button
               size="sm"
               variant="secondary"
-              onClick={() => setAddingSale(true)}
+              onClick={() => setSalePickerOpen(true)}
               disabled={availableForSale.length === 0}
             >
               <Plus size={15} /> Añadir producto
@@ -207,34 +223,11 @@ export function DayModal({ open, dayKey, onClose }: Props) {
           </div>
 
           <div className="space-y-2">
-            {daySales.length === 0 && !addingSale && (
+            {daySales.length === 0 && (
               <p className="rounded-xl border border-dashed hairline py-5 text-center text-sm text-muted">
                 Sin ventas registradas
               </p>
             )}
-
-            <AnimatePresence>
-              {addingSale && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="rounded-xl border border-brand/30 bg-brand/[0.04] p-3"
-                >
-                  <p className="mb-2 text-xs font-medium text-muted">
-                    Elige un producto
-                  </p>
-                  <ProductSelect
-                    products={availableForSale}
-                    value={null}
-                    onChange={(pid) => {
-                      upsertSale(dayKey!, pid, 0, 0)
-                      setAddingSale(false)
-                    }}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {daySales.map((sale) => {
               const product = productMap.get(sale.product_id)
@@ -289,6 +282,32 @@ export function DayModal({ open, dayKey, onClose }: Props) {
           />
         </section>
       </div>
+
+      <ProductPickerModal
+        open={videoPickerSlot !== null}
+        onClose={() => setVideoPickerSlot(null)}
+        products={products}
+        value={
+          videoPickerSlot !== null
+            ? dayVideos.find((v) => v.slot === videoPickerSlot)?.product_id ?? null
+            : null
+        }
+        onPick={(pid) => {
+          if (videoPickerSlot !== null && dayKey) setVideo(dayKey, videoPickerSlot, pid)
+        }}
+        title={videoPickerSlot !== null ? `Producto para vídeo ${videoPickerSlot}` : 'Elige un producto'}
+      />
+
+      <ProductPickerModal
+        open={salePickerOpen}
+        onClose={() => setSalePickerOpen(false)}
+        products={availableForSale}
+        value={null}
+        onPick={(pid) => {
+          if (dayKey) upsertSale(dayKey, pid, 0, 0)
+        }}
+        title="Añadir producto a las ventas"
+      />
     </Modal>
   )
 }

@@ -104,6 +104,11 @@ export function formatShortDate(d: Date): string {
 /** "Buenos días" / "Buenas tardes" / "Buenas noches" según la hora. */
 export function greetingForHour(d: Date = new Date()): string {
   const h = d.getHours()
+  // 00:00-05:59 → noche (madrugada)
+  // 06:00-11:59 → días
+  // 12:00-19:59 → tardes
+  // 20:00-23:59 → noche
+  if (h < 6) return 'Buenas noches'
   if (h < 12) return 'Buenos días'
   if (h < 20) return 'Buenas tardes'
   return 'Buenas noches'

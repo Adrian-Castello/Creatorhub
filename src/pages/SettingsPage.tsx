@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Download, Info, Moon, Palette, Sun, Target, User } from 'lucide-react'
+import { Moon, Palette, Sun, Target, User } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { useSettings } from '../hooks/useSettings'
-import { useData } from '../hooks/useData'
 import { useThemeContext } from '../hooks/themeContext'
-import { APP_NAME, APP_VERSION } from '../lib/constants'
 import type { ThemeMode } from '../hooks/useTheme'
-import { useToast } from '../hooks/useToast'
 
 const themeOptions: { value: ThemeMode; label: string; icon: LucideIcon }[] = [
   { value: 'light', label: 'Claro', icon: Sun },
@@ -18,9 +15,7 @@ const themeOptions: { value: ThemeMode; label: string; icon: LucideIcon }[] = [
 
 export function SettingsPage() {
   const { settings, updateSettings } = useSettings()
-  const { products, videos, sales, notes } = useData()
   const { mode, setMode } = useThemeContext()
-  const { push } = useToast()
 
   const [name, setName] = useState(settings.user_name ?? '')
   const [goal, setGoal] = useState(String(settings.daily_video_goal))
@@ -41,29 +36,6 @@ export function SettingsPage() {
   function save() {
     const g = Math.min(20, Math.max(1, parseInt(goal) || 5))
     updateSettings({ user_name: name.trim() || null, daily_video_goal: g })
-  }
-
-  function exportData() {
-    const payload = {
-      exported_at: new Date().toISOString(),
-      app: APP_NAME,
-      version: APP_VERSION,
-      settings,
-      products,
-      videos,
-      sales,
-      notes: Object.values(notes),
-    }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: 'application/json',
-    })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'creatorhub-export-' + new Date().toISOString().slice(0, 10) + '.json'
-    a.click()
-    URL.revokeObjectURL(url)
-    push('Datos exportados', 'success')
   }
 
   const stickyBar = dirty ? (
@@ -137,30 +109,6 @@ export function SettingsPage() {
               </button>
             )
           })}
-        </div>
-      </section>
-
-      <section className="surface rounded-2xl p-5 space-y-4">
-        <div className="flex items-center gap-2 text-muted">
-          <Download size={16} />
-          <h2 className="text-sm font-semibold uppercase tracking-wide">Datos</h2>
-        </div>
-        <Button variant="secondary" onClick={exportData} className="w-full sm:w-auto">
-          <Download size={16} /> Exportar datos (JSON)
-        </Button>
-        <p className="text-xs text-muted">
-          Descarga una copia completa de tus productos, videos, ventas y notas.
-        </p>
-      </section>
-
-      <section className="surface rounded-2xl p-5">
-        <div className="flex items-center gap-2 text-muted mb-3">
-          <Info size={16} />
-          <h2 className="text-sm font-semibold uppercase tracking-wide">Acerca de</h2>
-        </div>
-        <div className="text-sm">
-          <strong className="font-semibold">{APP_NAME}</strong>
-          <em className="text-muted not-italic"> v{APP_VERSION}</em>
         </div>
       </section>
 

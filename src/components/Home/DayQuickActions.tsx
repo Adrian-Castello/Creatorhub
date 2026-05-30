@@ -110,7 +110,7 @@ export function DayQuickActions({ dayKey, onOpenDay }: Props) {
       <ProductPickerModal
         open={pickerSlot !== null}
         onClose={() => setPickerSlot(null)}
-        products={products}
+        products={products.filter((p) => p.status !== 'descartado')}
         value={pickerVideo?.product_id ?? null}
         onPick={(pid) => {
           if (pickerSlot !== null) setVideo(dayKey, pickerSlot, pid)

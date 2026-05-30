@@ -38,6 +38,14 @@ export function CalendarPage() {
     [anchor],
   )
   const totals = rangeTotals(sales, videos, products, monthRange)
+  const monthViews = useMemo(() => {
+    return dayViews
+      .filter((v) => {
+        const d = fromKey(v.day_date)
+        return d >= monthRange.from && d <= monthRange.to
+      })
+      .reduce((a, v) => a + v.views, 0)
+  }, [dayViews, monthRange])
 
   function go(delta: number) {
     setDirection(delta)
@@ -68,75 +76,54 @@ export function CalendarPage() {
     return { ...t, views }
   }, [previewKey, sales, products, videos, dayViews])
 
+  const isCurrentMonth =
+    anchor.getFullYear() === new Date().getFullYear() &&
+    anchor.getMonth() === new Date().getMonth()
+
   return (
     <div className="space-y-5">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <h1 className="min-w-[180px] text-2xl font-bold tracking-tight sm:text-3xl">
-            {formatMonthYear(anchor)}
-          </h1>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => go(-1)}
-              className="rounded-lg p-2 text-sub transition-colors hover:bg-black/5 dark:text-d-sub dark:hover:bg-white/5"
-              aria-label="Mes anterior"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={() => go(1)}
-              className="rounded-lg p-2 text-sub transition-colors hover:bg-black/5 dark:text-d-sub dark:hover:bg-white/5"
-              aria-label="Mes siguiente"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
-          <button
-            onClick={() => {
-              setDirection(0)
-              setAnchor(new Date())
-            }}
-            aria-label="Volver al mes actual"
-            title="Volver al mes actual"
-            className="flex h-9 w-9 items-center justify-center rounded-xl surface text-brand transition-all hover:border-brand/40 hover:scale-105"
-          >
-            <CalendarCheck size={18} />
-          </button>
-        </div>
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          {formatMonthYear(anchor)}
+        </h1>
 
-        <div className="flex items-center gap-5 text-sm">
-          <div>
-            <div className="text-xs text-muted">Vídeos</div>
-            <div className="font-semibold tnum">{num(totals.videos)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted">GMV</div>
-            <div className="font-semibold tnum text-brand">{eur(totals.gmv)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted">Comisión</div>
-            <div className="font-semibold tnum text-accent">
-              {eur(totals.commission)}
-            </div>
-          </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => go(-1)}
+            aria-label="Mes anterior"
+            className="flex h-9 w-9 items-center justify-center rounded-xl surface transition-colors hover:border-brand/40"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            onClick={() => go(1)}
+            aria-label="Mes siguiente"
+            className="flex h-9 w-9 items-center justify-center rounded-xl surface transition-colors hover:border-brand/40"
+          >
+            <ChevronRight size={18} />
+          </button>
+          {!isCurrentMonth && (
+            <button
+              onClick={() => {
+                setDirection(0)
+                setAnchor(new Date())
+              }}
+              aria-label="Volver al mes actual"
+              title="Volver al mes actual"
+              className="flex h-9 w-9 items-center justify-center rounded-xl surface text-brand transition-all hover:border-brand/40 hover:scale-105"
+            >
+              <CalendarCheck size={18} />
+            </button>
+          )}
         </div>
       </header>
 
-      {/* Tabs Publicaciones / Monetización */}
-      <div className="flex gap-2">
-        {MODES.map((m) => (
-          <button
-            key={m.value}
-            onClick={() => setMode(m.value)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              mode === m.value
-                ? 'bg-brand text-white'
-                : 'surface text-sub dark:text-d-sub hover:border-brand/40'
-            }`}
-          >
-            {m.label}
-          </button>
-        ))}
+      {/* KPIs del mes */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <KpiTile label="Vídeos" value={num(totals.videos)} />
+        <KpiTile label="Visualizaciones" value={num(monthViews)} />
+        <KpiTile label="GMV" value={eur(totals.gmv)} accent="text-brand" />
+        <KpiTile label="Comisión" value={eur(totals.commission)} accent="text-accent" />
       </div>
 
       <MonthGrid
@@ -151,6 +138,23 @@ export function CalendarPage() {
         isDark={isDark}
         onOpenDay={handleCellClick}
       />
+
+      {/* Segmented control Publicaciones / Monetización (debajo del calendario) */}
+      <div className="flex w-full rounded-full surface p-1">
+        {MODES.map((m) => (
+          <button
+            key={m.value}
+            onClick={() => setMode(m.value)}
+            className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              mode === m.value
+                ? 'bg-brand text-white shadow-sm'
+                : 'text-sub dark:text-d-sub hover:text-ink dark:hover:text-d-ink'
+            }`}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
 
       {/* Panel inline al clicar un día */}
       <AnimatePresence>
@@ -245,6 +249,25 @@ function Stat({
         <Icon size={14} className="text-muted" />
       </div>
       <div className={`text-lg font-bold tnum ${accent ?? ''}`}>{value}</div>
+    </div>
+  )
+}
+
+function KpiTile({
+  label,
+  value,
+  accent,
+}: {
+  label: string
+  value: string
+  accent?: string
+}) {
+  return (
+    <div className="surface rounded-2xl p-4">
+      <div className="text-xs font-medium text-muted">{label}</div>
+      <div className={`mt-1 text-xl font-bold tnum sm:text-2xl ${accent ?? ''}`}>
+        {value}
+      </div>
     </div>
   )
 }

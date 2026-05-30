@@ -350,7 +350,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
       <ProductPickerModal
         open={videoPickerSlot !== null}
         onClose={() => setVideoPickerSlot(null)}
-        products={products}
+        products={products.filter((p) => p.status !== 'descartado')}
         value={
           videoPickerSlot !== null
             ? dayVideos.find((v) => v.slot === videoPickerSlot)?.product_id ?? null

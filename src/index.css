@@ -14,6 +14,19 @@ body,
   height: 100%;
 }
 
+/* Bloquea zoom por pinch / doble-tap en móvil */
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Inputs >= 16px para que iOS no haga auto-zoom al enfocar */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
 body {
   @apply bg-canvas text-ink antialiased;
   font-feature-settings: 'cv01', 'cv03', 'ss01';

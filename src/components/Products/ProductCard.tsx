@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import type { Product, Sale, Video } from '../../lib/types'
 import { BlurImage } from '../ui/BlurImage'
-import { STATUS_TINTS } from '../../lib/constants'
+import { STATUS_COLORS, STATUS_TINTS } from '../../lib/constants'
 import { useThemeContext } from '../../hooks/themeContext'
 import { pct } from '../../lib/format'
 
@@ -18,7 +18,7 @@ export function ProductCard({ product }: Props) {
   const { isDark } = useThemeContext()
   const tint = STATUS_TINTS[product.status]
   const bg = isDark ? tint.darkBg : tint.lightBg
-  const border = isDark ? tint.darkBorder : tint.lightBorder
+  const borderColor = STATUS_COLORS[product.status]
 
   return (
     <motion.button
@@ -26,8 +26,8 @@ export function ProductCard({ product }: Props) {
       onClick={() => navigate(`/productos/${product.id}`)}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
-      style={{ backgroundColor: bg, borderColor: border }}
-      className="group flex flex-col overflow-hidden rounded-2xl border text-left transition-shadow hover:shadow-soft-lg"
+      style={{ backgroundColor: bg, borderColor, borderWidth: '2px' }}
+      className="group flex flex-col overflow-hidden rounded-2xl text-left transition-shadow hover:shadow-soft-lg"
     >
       <BlurImage src={product.image_url} className="aspect-[4/3] w-full" />
       <div className="flex flex-1 flex-col p-3">

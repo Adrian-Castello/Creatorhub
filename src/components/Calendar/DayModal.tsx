@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ImagePlus, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { Check, ChevronRight, ImagePlus, Plus, Sparkles, Trash2 } from 'lucide-react'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { ProductPickerModal } from '../ui/ProductPickerModal'
@@ -26,7 +26,6 @@ export function DayModal({ open, dayKey, onClose }: Props) {
     products,
     videos,
     sales,
-    notes,
     dayViews,
     settings,
     setVideo,
@@ -35,18 +34,15 @@ export function DayModal({ open, dayKey, onClose }: Props) {
     deleteSale,
     upsertDayView,
     deleteDayView,
-    saveNote,
   } = useData()
 
   const goal = settings.daily_video_goal
-  const [noteText, setNoteText] = useState('')
   const [confettiFire, setConfettiFire] = useState(0)
   const [salePickerOpen, setSalePickerOpen] = useState(false)
   const [viewsPickerOpen, setViewsPickerOpen] = useState(false)
   const [videoPickerSlot, setVideoPickerSlot] = useState<number | null>(null)
   const [importOpen, setImportOpen] = useState(false)
   const prevCompleted = useRef(0)
-  const noteRef = useRef<HTMLTextAreaElement>(null)
 
   const dayVideos = useMemo(
     () => videos.filter((v) => v.day_date === dayKey),
@@ -67,12 +63,6 @@ export function DayModal({ open, dayKey, onClose }: Props) {
 
   const completed = dayVideos.length
 
-  useEffect(() => {
-    if (dayKey) {
-      setNoteText(notes[dayKey]?.notes ?? '')
-    }
-  }, [dayKey, notes])
-
   // Micro-celebration when hitting the goal.
   useEffect(() => {
     if (!open) {
@@ -84,16 +74,6 @@ export function DayModal({ open, dayKey, onClose }: Props) {
     }
     prevCompleted.current = completed
   }, [completed, goal, open])
-
-  function autosize() {
-    const el = noteRef.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = el.scrollHeight + 'px'
-  }
-  useEffect(() => {
-    if (open) requestAnimationFrame(autosize)
-  }, [open, noteText])
 
   if (!dayKey) return null
 
@@ -117,7 +97,6 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   const availableForViews = products.filter((p) => !usedViewsProductIds.has(p.id))
 
   function handleClose() {
-    if (dayKey) saveNote(dayKey, noteText)
     onClose()
   }
 
@@ -131,14 +110,6 @@ export function DayModal({ open, dayKey, onClose }: Props) {
       }
       footer={
         <>
-          <Button
-            variant="secondary"
-            onClick={() => setImportOpen(true)}
-            className="mr-auto"
-            title="Importar datos del día desde una captura de TikTok Shop"
-          >
-            <Sparkles size={15} /> Importar de captura
-          </Button>
           <Button variant="ghost" onClick={onClose}>
             Cerrar
           </Button>
@@ -318,31 +289,31 @@ export function DayModal({ open, dayKey, onClose }: Props) {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    className="flex items-center gap-3 rounded-xl surface p-2.5"
+                    className="flex items-center gap-2 rounded-xl surface p-2.5"
                   >
                     {p?.image_url ? (
-                      <img src={p.image_url} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+                      <img src={p.image_url} alt={p.name} title={p?.name} className="h-10 w-10 shrink-0 rounded-lg object-cover" />
                     ) : (
-                      <div className="h-9 w-9 shrink-0 rounded-lg bg-black/5 dark:bg-white/10" />
+                      <div className="h-10 w-10 shrink-0 rounded-lg bg-black/5 dark:bg-white/10" title={p?.name ?? '—'} />
                     )}
-                    <span className="flex-1 truncate text-sm font-medium">
-                      {p?.name ?? '—'}
-                    </span>
-                    <input
-                      type="number"
-                      min={0}
-                      inputMode="numeric"
-                      value={dv.views || ''}
-                      placeholder="0"
-                      onChange={(e) => {
-                        const n = parseInt(e.target.value) || 0
-                        if (dayKey) upsertDayView(dayKey, dv.product_id, n)
-                      }}
-                      className="w-28 rounded-lg border hairline bg-transparent px-2 py-1.5 text-right text-sm tnum outline-none focus:border-brand/60"
-                    />
+                    <label className="flex h-10 flex-1 items-center gap-1.5 rounded-lg surface px-2.5 focus-within:border-brand/60">
+                      <span className="text-[10px] uppercase tracking-wide text-muted">Views</span>
+                      <input
+                        type="number"
+                        min={0}
+                        inputMode="numeric"
+                        value={dv.views || ''}
+                        placeholder="0"
+                        onChange={(e) => {
+                          const n = parseInt(e.target.value) || 0
+                          if (dayKey) upsertDayView(dayKey, dv.product_id, n)
+                        }}
+                        className="w-full min-w-0 bg-transparent text-right text-sm outline-none tnum"
+                      />
+                    </label>
                     <button
                       onClick={() => deleteDayView(dv.id)}
-                      className="rounded-lg p-1.5 text-muted transition-colors hover:bg-st-descartado/10 hover:text-st-descartado"
+                      className="shrink-0 rounded-lg p-1.5 text-muted transition-colors hover:bg-st-descartado/10 hover:text-st-descartado"
                       aria-label="Eliminar"
                     >
                       <Trash2 size={15} />
@@ -354,22 +325,25 @@ export function DayModal({ open, dayKey, onClose }: Props) {
           </div>
         </section>
 
-        {/* Section 4: Notes */}
+        {/* Section 4: Analizar con IA */}
         <section>
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
-            Notas
-          </h3>
-          <textarea
-            ref={noteRef}
-            value={noteText}
-            onChange={(e) => {
-              setNoteText(e.target.value)
-              autosize()
-            }}
-            placeholder="Notas del día…"
-            rows={2}
-            className="w-full resize-none rounded-xl surface px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-brand/60"
-          />
+          <button
+            onClick={() => setImportOpen(true)}
+            className="flex w-full items-center justify-between rounded-xl border hairline p-3 text-left transition-colors hover:border-brand/40 hover:bg-brand/[0.04]"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
+                <Sparkles size={16} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">Analizar con IA</div>
+                <div className="mt-0.5 text-xs text-muted">
+                  Sube una captura de TikTok Shop y rellénalo todo
+                </div>
+              </div>
+            </div>
+            <ChevronRight size={18} className="shrink-0 text-muted" />
+          </button>
         </section>
       </div>
 
@@ -452,23 +426,25 @@ function SaleRow({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -10 }}
-      className="flex flex-wrap items-center gap-2 rounded-xl surface p-2.5 sm:flex-nowrap"
+      className="flex items-center gap-2 rounded-xl surface p-2.5"
     >
       {product?.image_url ? (
         <img
           src={product.image_url}
-          alt=""
-          className="h-9 w-9 shrink-0 rounded-lg object-cover"
+          alt={product.name}
+          title={product?.name}
+          className="h-10 w-10 shrink-0 rounded-lg object-cover"
         />
       ) : (
-        <div className="h-9 w-9 shrink-0 rounded-lg bg-black/5 dark:bg-white/10" />
+        <div
+          className="h-10 w-10 shrink-0 rounded-lg bg-black/5 dark:bg-white/10"
+          title={product?.name ?? 'Producto eliminado'}
+        />
       )}
-      <span className="min-w-0 flex-1 truncate text-sm font-medium">
-        {product?.name ?? 'Producto eliminado'}
-      </span>
 
-      <div className="flex items-center gap-2">
-        <div className="flex h-9 w-20 items-center rounded-lg surface px-2">
+      <div className="flex flex-1 items-center gap-2">
+        <label className="flex h-10 flex-1 items-center gap-1.5 rounded-lg surface px-2.5 focus-within:border-brand/60">
+          <span className="text-[10px] uppercase tracking-wide text-muted">Uds</span>
           <input
             type="number"
             min={0}
@@ -477,11 +453,12 @@ function SaleRow({
               setU(e.target.value)
               commit(e.target.value, g)
             }}
-            placeholder="uds"
-            className="w-full bg-transparent text-sm outline-none tnum"
+            placeholder="0"
+            className="w-full min-w-0 bg-transparent text-right text-sm outline-none tnum"
           />
-        </div>
-        <div className="flex h-9 w-24 items-center rounded-lg surface px-2">
+        </label>
+        <label className="flex h-10 flex-1 items-center gap-1.5 rounded-lg surface px-2.5 focus-within:border-brand/60">
+          <span className="text-[10px] uppercase tracking-wide text-muted">GMV €</span>
           <input
             type="number"
             min={0}
@@ -491,17 +468,16 @@ function SaleRow({
               setG(e.target.value)
               commit(u, e.target.value)
             }}
-            placeholder="GMV"
-            className="w-full bg-transparent text-sm outline-none tnum"
+            placeholder="0"
+            className="w-full min-w-0 bg-transparent text-right text-sm outline-none tnum"
           />
-          <span className="text-xs text-muted">€</span>
-        </div>
-        <div className="w-16 text-right text-sm font-medium tnum text-accent">
+        </label>
+        <div className="hidden sm:block w-16 text-right text-sm font-semibold tnum text-accent">
           {eur(commission)}
         </div>
         <button
           onClick={onDelete}
-          className="rounded-lg p-1.5 text-muted transition-colors hover:bg-st-descartado/10 hover:text-st-descartado"
+          className="shrink-0 rounded-lg p-1.5 text-muted transition-colors hover:bg-st-descartado/10 hover:text-st-descartado"
         >
           <Trash2 size={16} />
         </button>

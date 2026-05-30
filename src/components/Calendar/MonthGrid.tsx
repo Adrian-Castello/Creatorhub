@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import type { Product, Sale, Video } from '../../lib/types'
+import type { DayView, Product, Sale, Video } from '../../lib/types'
 import { monthGridDays, WEEKDAY_SHORT } from '../../lib/dates'
-import { DayCell } from './DayCell'
+import { DayCell, type CalendarMode } from './DayCell'
 
 interface Props {
   monthAnchor: Date
@@ -10,6 +10,8 @@ interface Props {
   sales: Sale[]
   videos: Video[]
   products: Product[]
+  dayViews: DayView[]
+  mode: CalendarMode
   isDark: boolean
   onOpenDay: (key: string) => void
 }
@@ -21,11 +23,13 @@ export function MonthGrid({
   sales,
   videos,
   products,
+  dayViews,
+  mode,
   isDark,
   onOpenDay,
 }: Props) {
   const days = monthGridDays(monthAnchor)
-  const monthKey = `${monthAnchor.getFullYear()}-${monthAnchor.getMonth()}`
+  const monthKey = `${monthAnchor.getFullYear()}-${monthAnchor.getMonth()}-${mode}`
 
   return (
     <div>
@@ -60,6 +64,8 @@ export function MonthGrid({
                 sales={sales}
                 videos={videos}
                 products={products}
+                dayViews={dayViews}
+                mode={mode}
                 isDark={isDark}
                 onOpen={onOpenDay}
               />

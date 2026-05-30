@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect, useRef } from 'react'
 import { Search, Check } from 'lucide-react'
 import { Modal } from './Modal'
 import type { Product } from '../../lib/types'
-import { StatusBadge } from '../Products/StatusBadge'
 
 interface Props {
   open: boolean
@@ -34,12 +33,8 @@ export function ProductPickerModal({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    // descartados al final, y solo cuando se buscan explícitamente
-    const visible = q
-      ? products
-      : products.filter((p) => p.status !== 'descartado')
-    if (!q) return visible
-    return visible.filter((p) => p.name.toLowerCase().includes(q))
+    if (!q) return products
+    return products.filter((p) => p.name.toLowerCase().includes(q))
   }, [products, query])
 
   function pick(id: string) {
@@ -71,7 +66,7 @@ export function ProductPickerModal({
         </div>
 
         {/* Lista */}
-        <div className="-mx-2 max-h-[60vh] overflow-y-auto">
+        <div className="-mx-2">
           {filtered.length === 0 ? (
             <div className="px-3 py-12 text-center text-sm text-muted">
               {query ? `Sin resultados para "${query}"` : 'No hay productos todavía'}
@@ -100,11 +95,8 @@ export function ProductPickerModal({
                         <div className="h-11 w-11 shrink-0 rounded-lg bg-black/5 dark:bg-white/10" />
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">
+                        <div className="text-sm font-medium">
                           {p.name}
-                        </div>
-                        <div className="mt-0.5">
-                          <StatusBadge status={p.status} />
                         </div>
                       </div>
                       {selected && (

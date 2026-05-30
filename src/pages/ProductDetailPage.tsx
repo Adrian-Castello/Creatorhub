@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Coins, Eye, Film, Flame, Package, Pencil, TrendingUp, Trash2 } from 'lucide-react'
+import { ArrowLeft, Coins, Eye, Film, Package, Pencil, ShoppingBag, TrendingUp, Trash2 } from 'lucide-react'
 import { ProductForm } from '../components/Products/ProductForm'
 import { StatusPicker } from '../components/Products/StatusPicker'
 import { BlurImage } from '../components/ui/BlurImage'
@@ -9,11 +9,9 @@ import { Modal } from '../components/ui/Modal'
 import { EmptyState } from '../components/ui/EmptyState'
 import { useData } from '../hooks/useData'
 import { useThemeContext } from '../hooks/themeContext'
-import { productTotals, productViews, productViralDays } from '../lib/calculations'
-import { STATUS_TINTS, STATUS_LABELS } from '../lib/constants'
+import { productTotals, productViews } from '../lib/calculations'
+import { STATUS_COLORS, STATUS_LABELS, STATUS_TINTS } from '../lib/constants'
 import { eur, num, pct } from '../lib/format'
-
-const VIRAL_THRESHOLD = 100_000
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -43,25 +41,10 @@ export function ProductDetailPage() {
 
   const totals = productTotals(product.id, sales, videos, products)
   const views = productViews(product.id, dayViews)
-  const viral = productViralDays(product.id, dayViews, VIRAL_THRESHOLD)
 
   const tint = STATUS_TINTS[product.status]
   const bg = isDark ? tint.darkBg : tint.lightBg
-  const border = isDark ? tint.darkBorder : tint.lightBorder
-
-  const kpis = [
-    { label: 'GMV total', value: eur(totals.gmv), icon: TrendingUp, accent: 'text-brand' },
-    { label: 'Comisión', value: eur(totals.commission), icon: Coins, accent: 'text-accent' },
-    { label: 'Unidades vendidas', value: num(totals.units), icon: Package },
-    { label: 'Vídeos hechos', value: num(totals.videos), icon: Film },
-    { label: 'Visualizaciones', value: num(views), icon: Eye },
-    {
-      label: 'Vídeos virales',
-      value: num(viral),
-      icon: Flame,
-      sub: `+${(VIRAL_THRESHOLD / 1000).toFixed(0)}k visualizaciones`,
-    },
-  ]
+  const statusColor = STATUS_COLORS[product.status]
 
   return (
     <div className="space-y-6">
@@ -80,43 +63,58 @@ export function ProductDetailPage() {
       </div>
 
       <div
-        className="overflow-hidden rounded-2xl border"
-        style={{ borderColor: border }}
+        className="overflow-hidden rounded-2xl"
+        style={{ borderColor: statusColor, borderWidth: '2px', borderStyle: 'solid' }}
       >
         <BlurImage src={product.image_url} className="aspect-[16/9] w-full" />
-        <div
-          className="p-5"
-          style={{ backgroundColor: bg }}
-        >
-          <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
-          <div className="mt-2 flex items-center gap-3 text-sm text-muted tnum">
-            <span>Comisión {pct(product.commission_pct)}</span>
-            <span className="opacity-40">·</span>
-            <span>Precio {eur(product.price)}</span>
+        <div className="p-5" style={{ backgroundColor: bg }}>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="min-w-0 flex-1 text-2xl font-bold tracking-tight">
+              {product.name}
+            </h1>
             <button
               onClick={() => setStatusOpen(true)}
-              className="ml-auto rounded-full px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:text-ink dark:hover:text-d-ink"
               title="Cambiar estado"
+              className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-all hover:scale-105"
+              style={{ backgroundColor: statusColor, color: 'white' }}
             >
               {STATUS_LABELS[product.status]}
             </button>
           </div>
+          <div className="mt-2 text-sm text-muted tnum">
+            Comisión {pct(product.commission_pct)}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        {kpis.map((k) => (
-          <div key={k.label} className="surface rounded-2xl p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-medium text-muted">{k.label}</span>
-              <k.icon size={16} className="text-muted" />
-            </div>
-            <div className={`text-2xl font-bold tnum ${k.accent ?? ''}`}>{k.value}</div>
-            {k.sub && (
-              <div className="mt-0.5 text-xs text-muted">{k.sub}</div>
-            )}
+      {/* 3 secciones grandes: Ventas, Views, Comisión */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <BigStat label="Ventas" value={num(totals.units)} icon={ShoppingBag} />
+        <BigStat label="Views" value={num(views)} icon={Eye} />
+        <BigStat
+          label="Comisión"
+          value={eur(totals.commission)}
+          icon={Coins}
+          accent="text-accent"
+        />
+      </div>
+
+      {/* KPIs secundarios */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="surface rounded-2xl p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-medium text-muted">GMV total</span>
+            <TrendingUp size={16} className="text-muted" />
           </div>
-        ))}
+          <div className="text-2xl font-bold tnum text-brand">{eur(totals.gmv)}</div>
+        </div>
+        <div className="surface rounded-2xl p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-medium text-muted">Vídeos hechos</span>
+            <Film size={16} className="text-muted" />
+          </div>
+          <div className="text-2xl font-bold tnum">{num(totals.videos)}</div>
+        </div>
       </div>
 
       <ProductForm open={editOpen} onClose={() => setEditOpen(false)} product={product} />
@@ -163,6 +161,30 @@ export function ProductDetailPage() {
           también sus ventas asociadas. Esta acción no se puede deshacer.
         </p>
       </Modal>
+    </div>
+  )
+}
+
+function BigStat({
+  label,
+  value,
+  icon: Icon,
+  accent,
+}: {
+  label: string
+  value: string
+  icon: any
+  accent?: string
+}) {
+  return (
+    <div className="surface rounded-2xl p-5">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+          {label}
+        </span>
+        <Icon size={18} className="text-muted" />
+      </div>
+      <div className={`text-3xl font-bold tnum ${accent ?? ''}`}>{value}</div>
     </div>
   )
 }

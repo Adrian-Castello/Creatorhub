@@ -43,7 +43,7 @@ export function DayQuickActions({ dayKey, onOpenDay }: Props) {
           Vídeos del día
         </h2>
         <Button size="sm" variant="secondary" onClick={onOpenDay}>
-          <Receipt size={15} /> Registrar ventas
+          <Receipt size={15} /> Registrar datos
         </Button>
       </div>
 

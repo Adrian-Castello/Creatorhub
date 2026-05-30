@@ -20,7 +20,6 @@ export function ProductForm({ open, onClose, product }: Props) {
 
   const [name, setName] = useState('')
   const [commission, setCommission] = useState('')
-  const [price, setPrice] = useState('')
   const [status, setStatus] = useState<ProductStatus>('solicitado')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -29,19 +28,16 @@ export function ProductForm({ open, onClose, product }: Props) {
     if (open) {
       setName(product?.name ?? '')
       setCommission(product ? String(product.commission_pct) : '')
-      setPrice(product ? String(product.price) : '')
       setStatus(product?.status ?? 'solicitado')
       setImageUrl(product?.image_url ?? null)
     }
   }, [open, product])
 
   const commissionNum = parseFloat(commission)
-  const priceNum = parseFloat(price)
   const nameValid = name.trim().length > 0
   const commissionValid =
     !isNaN(commissionNum) && commissionNum >= 0 && commissionNum <= 100
-  const priceValid = !isNaN(priceNum) && priceNum >= 0
-  const valid = nameValid && commissionValid && priceValid
+  const valid = nameValid && commissionValid
 
   async function save() {
     if (!valid) return
@@ -50,7 +46,7 @@ export function ProductForm({ open, onClose, product }: Props) {
       name: name.trim(),
       image_url: imageUrl,
       commission_pct: commissionNum,
-      price: priceNum,
+      price: product?.price ?? 0,
       status,
     }
     if (isEdit && product) {
@@ -92,33 +88,20 @@ export function ProductForm({ open, onClose, product }: Props) {
           error={!nameValid && name.length > 0 ? 'Obligatorio' : undefined}
         />
 
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            label="Comisión %"
-            type="number"
-            step="0.01"
-            min={0}
-            max={100}
-            suffix="%"
-            value={commission}
-            onChange={(e) => setCommission(e.target.value)}
-            placeholder="12.50"
-            error={
-              commission.length > 0 && !commissionValid ? '0–100' : undefined
-            }
-          />
-          <Input
-            label="Precio"
-            type="number"
-            step="0.01"
-            min={0}
-            suffix="€"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="19.99"
-            error={price.length > 0 && !priceValid ? 'Inválido' : undefined}
-          />
-        </div>
+        <Input
+          label="Comisión %"
+          type="number"
+          step="0.01"
+          min={0}
+          max={100}
+          suffix="%"
+          value={commission}
+          onChange={(e) => setCommission(e.target.value)}
+          placeholder="12.50"
+          error={
+            commission.length > 0 && !commissionValid ? '0–100' : undefined
+          }
+        />
 
         <div>
           <span className="mb-2 block text-sm font-medium text-muted">Estado</span>

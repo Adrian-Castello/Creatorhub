@@ -3,7 +3,7 @@ import type { DayView, Product, Sale, Video } from '../../lib/types'
 import { dayColorLevel, dayTotals } from '../../lib/calculations'
 import { COLOR_LEVELS } from '../../lib/constants'
 import { toKey, todayKey } from '../../lib/dates'
-import { eurCompact, numCompact } from '../../lib/format'
+import { eur, eurCompact, numCompact } from '../../lib/format'
 
 export type CalendarMode = 'publicaciones' | 'monetizacion'
 
@@ -23,9 +23,9 @@ interface Props {
 // Niveles de color para monetización: del más bajo al más alto GMV.
 function monetizationLevel(gmv: number): 0 | 1 | 2 | 3 | 4 {
   if (gmv <= 0) return 0
-  if (gmv < 25) return 1
-  if (gmv < 100) return 2
-  if (gmv < 300) return 3
+  if (gmv < 10) return 1
+  if (gmv < 50) return 2
+  if (gmv < 150) return 3
   return 4
 }
 
@@ -95,31 +95,54 @@ export function DayCell({
         {date.getDate()}
       </span>
 
-      {mode === 'publicaciones' && totals.videos > 0 && (
-        <span className={`mt-0.5 hidden text-[10px] tnum sm:block ${subColor}`}>
-          {totals.videos}/{goal} 🎬
-        </span>
+      {/* Modo PUBLICACIONES: vídeos arriba, vistas abajo */}
+      {mode === 'publicaciones' && (
+        <>
+          {totals.videos > 0 && (
+            <span className={`mt-0.5 hidden text-[10px] tnum sm:block ${subColor}`}>
+              {totals.videos}/{goal} 🎬
+            </span>
+          )}
+          {dayTotalViews > 0 && (
+            <span
+              className={`mt-auto flex items-center gap-1 text-[10px] font-medium tnum ${
+                textOnTint
+                  ? isDark
+                    ? 'text-white/85'
+                    : 'text-black/65'
+                  : 'text-muted'
+              }`}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+              {numCompact(dayTotalViews)}
+            </span>
+          )}
+        </>
       )}
 
-      {mode === 'monetizacion' && totals.gmv > 0 && (
-        <span className={`mt-0.5 hidden text-[10px] tnum sm:block ${subColor}`}>
-          {eurCompact(totals.gmv)}
-        </span>
-      )}
-
-      {dayTotalViews > 0 && (
-        <span
-          className={`mt-auto flex items-center gap-1 text-[10px] font-medium tnum ${
-            textOnTint
-              ? isDark
-                ? 'text-white/85'
-                : 'text-black/65'
-              : 'text-muted'
-          }`}
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-          {numCompact(dayTotalViews)}
-        </span>
+      {/* Modo MONETIZACIÓN: vistas en medio (pequeño), GMV abajo (destacado) */}
+      {mode === 'monetizacion' && (
+        <>
+          {dayTotalViews > 0 && (
+            <span className={`mt-0.5 hidden text-[10px] tnum sm:block ${subColor}`}>
+              {numCompact(dayTotalViews)} 👁
+            </span>
+          )}
+          {totals.gmv > 0 && (
+            <span
+              className={`mt-auto text-[11px] font-semibold tnum sm:text-xs ${
+                textOnTint
+                  ? isDark
+                    ? 'text-white'
+                    : 'text-black/85'
+                  : 'text-accent'
+              }`}
+            >
+              <span className="sm:hidden">{eurCompact(totals.gmv)}</span>
+              <span className="hidden sm:inline">{eur(totals.gmv)}</span>
+            </span>
+          )}
+        </>
       )}
     </motion.button>
   )

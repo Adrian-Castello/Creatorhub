@@ -58,6 +58,7 @@ create index if not exists idx_sales_product_id on public.sales (product_id);
 create table if not exists public.day_notes (
   day_date    date primary key,
   notes       text not null default '',
+  visits      int not null default 0,
   updated_at  timestamptz not null default now()
 );
 

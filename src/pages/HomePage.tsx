@@ -42,7 +42,8 @@ export function HomePage() {
         {/* Saludo + fecha relativa */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {greeting}{name ? `, ${name}` : ''}
+            {greeting}{name ? `, ${name}` : ''}{' '}
+            <span className="inline-block animate-wave origin-[70%_70%]" aria-hidden>👋</span>
           </h1>
           <AnimatePresence mode="wait">
             <motion.p

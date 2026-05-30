@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ImagePlus, Plus, Trash2 } from 'lucide-react'
+import { Check, Eye, ImagePlus, Plus, Trash2 } from 'lucide-react'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { ProductPickerModal } from '../ui/ProductPickerModal'
@@ -36,11 +36,14 @@ export function DayModal({ open, dayKey, onClose }: Props) {
 
   const goal = settings.daily_video_goal
   const [noteText, setNoteText] = useState('')
+  const [visitsText, setVisitsText] = useState('')
   const [confettiFire, setConfettiFire] = useState(0)
   const [salePickerOpen, setSalePickerOpen] = useState(false)
   const [videoPickerSlot, setVideoPickerSlot] = useState<number | null>(null)
   const prevCompleted = useRef(0)
   const noteRef = useRef<HTMLTextAreaElement>(null)
+
+  const visitsNum = parseInt(visitsText) || 0
 
   const dayVideos = useMemo(
     () => videos.filter((v) => v.day_date === dayKey),
@@ -58,7 +61,11 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   const completed = dayVideos.length
 
   useEffect(() => {
-    if (dayKey) setNoteText(notes[dayKey]?.notes ?? '')
+    if (dayKey) {
+      setNoteText(notes[dayKey]?.notes ?? '')
+      const v = notes[dayKey]?.visits ?? 0
+      setVisitsText(v > 0 ? String(v) : '')
+    }
   }, [dayKey, notes])
 
   // Micro-celebration when hitting the goal.
@@ -103,7 +110,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   const availableForSale = products.filter((p) => !usedProductIds.has(p.id))
 
   function handleClose() {
-    if (dayKey) saveNote(dayKey, noteText)
+    if (dayKey) saveNote(dayKey, { notes: noteText, visits: visitsNum })
     onClose()
   }
 
@@ -264,7 +271,27 @@ export function DayModal({ open, dayKey, onClose }: Props) {
           )}
         </section>
 
-        {/* Section 3: Notes */}
+        {/* Section 3: Visitas */}
+        <section>
+          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+            Visitas conseguidas
+          </h3>
+          <div className="flex items-center gap-3 surface rounded-xl px-3 h-12 focus-within:border-brand/60">
+            <Eye size={18} className="text-muted shrink-0" />
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={visitsText}
+              onChange={(e) => setVisitsText(e.target.value)}
+              placeholder="0"
+              className="flex-1 bg-transparent text-lg font-semibold outline-none tnum placeholder:text-muted placeholder:font-normal"
+            />
+            <span className="text-xs text-muted">visitas</span>
+          </div>
+        </section>
+
+        {/* Section 4: Notes */}
         <section>
           <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
             Notas

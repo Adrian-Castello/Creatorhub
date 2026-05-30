@@ -35,6 +35,7 @@ export interface Sale {
 export interface DayNote {
   day_date: string
   notes: string
+  visits: number
   updated_at: string
 }
 

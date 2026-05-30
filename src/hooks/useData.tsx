@@ -47,7 +47,7 @@ interface DataState {
   deleteSale: (id: string) => Promise<void>
 
   // Notes
-  saveNote: (dayKey: string, text: string) => Promise<void>
+  saveNote: (dayKey: string, patch: { notes?: string; visits?: number }) => Promise<void>
 
   // Settings
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
@@ -309,25 +309,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // ---- Notes ----
   const saveNote = useCallback<DataState['saveNote']>(
-    async (dayKey, text) => {
+    async (dayKey, patch) => {
       const prev = notes
-      const optimistic: DayNote = {
+      const current = notes[dayKey]
+      const next: DayNote = {
         day_date: dayKey,
-        notes: text,
+        notes: patch.notes ?? current?.notes ?? '',
+        visits: patch.visits ?? current?.visits ?? 0,
         updated_at: new Date().toISOString(),
       }
-      setNotes((cur) => ({ ...cur, [dayKey]: optimistic }))
+      setNotes((cur) => ({ ...cur, [dayKey]: next }))
       try {
         const { error } = await supabase
           .from('day_notes')
-          .upsert(
-            { day_date: dayKey, notes: text, updated_at: new Date().toISOString() },
-            { onConflict: 'day_date' },
-          )
+          .upsert(next, { onConflict: 'day_date' })
         if (error) throw error
       } catch (e: any) {
         setNotes(prev)
-        push('Error al guardar nota: ' + (e.message ?? ''), 'error')
+        push('Error al guardar: ' + (e.message ?? ''), 'error')
       }
     },
     [notes, push],

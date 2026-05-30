@@ -56,11 +56,18 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        wave: {
+          '0%, 60%, 100%': { transform: 'rotate(0deg)' },
+          '10%, 30%': { transform: 'rotate(14deg)' },
+          '20%, 40%': { transform: 'rotate(-8deg)' },
+          '50%': { transform: 'rotate(10deg)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.2s ease-out',
         'pop-in': 'pop-in 0.25s cubic-bezier(0.16,1,0.3,1)',
         'slide-up': 'slide-up 0.3s cubic-bezier(0.16,1,0.3,1)',
+        wave: 'wave 2.4s ease-in-out 0.4s 2',
       },
     },
   },

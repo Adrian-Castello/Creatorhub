@@ -1,4 +1,4 @@
-import { CheckCircle2, Coins, Package, TrendingUp } from 'lucide-react'
+import { CheckCircle2, Coins, Eye, TrendingUp } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useData } from '../../hooks/useData'
 import { dayTotals, dayColorLevel } from '../../lib/calculations'
@@ -11,14 +11,14 @@ interface Props {
 }
 
 export function DayKpis({ dayKey }: Props) {
-  const { sales, videos, products, settings } = useData()
+  const { sales, videos, products, notes, settings } = useData()
   const { isDark } = useThemeContext()
   const goal = settings.daily_video_goal
 
   const totals = dayTotals(dayKey, sales, products, videos)
   const level = dayColorLevel(totals.videos, goal)
   const levelColor = isDark ? COLOR_LEVELS[level].dark : COLOR_LEVELS[level].light
-  const activeCount = products.filter((p) => p.status === 'activo').length
+  const visits = notes[dayKey]?.visits ?? 0
   const progress = Math.min(100, (totals.videos / Math.max(1, goal)) * 100)
 
   const cards = [
@@ -42,9 +42,9 @@ export function DayKpis({ dayKey }: Props) {
       accent: 'text-accent',
     },
     {
-      label: 'Productos activos',
-      value: num(activeCount),
-      icon: Package,
+      label: 'Visitas',
+      value: num(visits),
+      icon: Eye,
     },
   ]
 

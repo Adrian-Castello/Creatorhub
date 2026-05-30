@@ -62,7 +62,9 @@ for (let d = 0; d < 40; d++) {
 export const demoSales = sales
 
 export const demoNotes: Record<string, DayNote> = {
-  [daysAgo(1)]: { day_date: daysAgo(1), notes: 'El proyector volvió a despuntar. Probar nuevo hook en el vídeo 3.', updated_at: daysAgo(1) },
+  [daysAgo(0)]: { day_date: daysAgo(0), notes: '', visits: 12450, updated_at: daysAgo(0) },
+  [daysAgo(1)]: { day_date: daysAgo(1), notes: 'El proyector volvió a despuntar. Probar nuevo hook en el vídeo 3.', visits: 8930, updated_at: daysAgo(1) },
+  [daysAgo(2)]: { day_date: daysAgo(2), notes: '', visits: 15200, updated_at: daysAgo(2) },
 }
 
 export const demoSettings: AppSettings = { id: 1, daily_video_goal: 5, user_name: 'Adrián', updated_at: new Date().toISOString() }

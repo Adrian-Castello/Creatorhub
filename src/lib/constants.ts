@@ -28,6 +28,47 @@ export const STATUS_COLORS: Record<ProductStatus, string> = {
   descartado: '#EF4444', // rojo — no funcionó
 }
 
+/**
+ * Tintes suaves para el fondo de la card del producto (light/dark).
+ * Muy bajos en saturación para que las cards se vean elegantes,
+ * con el color justo para identificar el estado de un vistazo.
+ */
+export const STATUS_TINTS: Record<
+  ProductStatus,
+  { lightBg: string; darkBg: string; lightBorder: string; darkBorder: string }
+> = {
+  solicitado: {
+    lightBg: '#F3F4F6',  // gris muy claro
+    darkBg: '#1F2024',
+    lightBorder: '#E5E7EB',
+    darkBorder: '#2F3036',
+  },
+  recibido: {
+    lightBg: '#EFF6FF',  // azul muy claro
+    darkBg: '#172033',
+    lightBorder: '#DBEAFE',
+    darkBorder: '#1E2D45',
+  },
+  testeando: {
+    lightBg: '#FFFBEB',  // ámbar muy claro
+    darkBg: '#2A2010',
+    lightBorder: '#FEF3C7',
+    darkBorder: '#3D2D14',
+  },
+  activo: {
+    lightBg: '#ECFDF5',  // verde menta muy claro
+    darkBg: '#0F2620',
+    lightBorder: '#D1FAE5',
+    darkBorder: '#163A2F',
+  },
+  descartado: {
+    lightBg: '#FEF2F2',  // rojo muy claro
+    darkBg: '#2A1515',
+    lightBorder: '#FECACA',
+    darkBorder: '#3D1E1E',
+  },
+}
+
 // 5-level day color scale. Index 0..5 = level returned by dayColorLevel.
 // Each entry: background for light & dark mode.
 export const COLOR_LEVELS: { light: string; dark: string }[] = [

@@ -253,3 +253,59 @@ export function productRanking(
   rows.sort((a, b) => b.gmv - a.gmv)
   return rows
 }
+
+/**
+ * Visualizaciones atribuibles a un producto, repartidas proporcionalmente
+ * entre los vídeos de cada día.
+ * Ej: si un día subiste 5 vídeos y 2 llevaban este producto, el producto
+ * se queda con 2/5 de las visualizaciones del día.
+ */
+export function productViews(
+  productId: string,
+  videos: Video[],
+  notes: Record<string, { visits: number }>,
+): number {
+  // Vídeos del producto agrupados por día
+  const byDay = new Map<string, { total: number; ofProduct: number }>()
+  for (const v of videos) {
+    const cur = byDay.get(v.day_date) ?? { total: 0, ofProduct: 0 }
+    cur.total += 1
+    if (v.product_id === productId) cur.ofProduct += 1
+    byDay.set(v.day_date, cur)
+  }
+  let views = 0
+  for (const [dayKey, { total, ofProduct }] of byDay) {
+    if (ofProduct === 0) continue
+    const dayViews = notes[dayKey]?.visits ?? 0
+    if (dayViews === 0) continue
+    views += dayViews * (ofProduct / total)
+  }
+  return Math.round(views)
+}
+
+/**
+ * Días en los que el producto fue "viral" — sus visualizaciones
+ * atribuidas superaron el umbral configurado (por defecto 100k).
+ */
+export function productViralDays(
+  productId: string,
+  videos: Video[],
+  notes: Record<string, { visits: number }>,
+  threshold: number = 100_000,
+): number {
+  const byDay = new Map<string, { total: number; ofProduct: number }>()
+  for (const v of videos) {
+    const cur = byDay.get(v.day_date) ?? { total: 0, ofProduct: 0 }
+    cur.total += 1
+    if (v.product_id === productId) cur.ofProduct += 1
+    byDay.set(v.day_date, cur)
+  }
+  let viral = 0
+  for (const [dayKey, { total, ofProduct }] of byDay) {
+    if (ofProduct === 0) continue
+    const dayViews = notes[dayKey]?.visits ?? 0
+    const productDayViews = dayViews * (ofProduct / total)
+    if (productDayViews >= threshold) viral += 1
+  }
+  return viral
+}

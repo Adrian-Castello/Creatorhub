@@ -1,21 +1,25 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Coins, Film, Package, Pencil, TrendingUp, Trash2 } from 'lucide-react'
+import { ArrowLeft, Coins, Eye, Film, Flame, Package, Pencil, TrendingUp, Trash2 } from 'lucide-react'
 import { ProductForm } from '../components/Products/ProductForm'
-import { StatusBadge } from '../components/Products/StatusBadge'
 import { StatusPicker } from '../components/Products/StatusPicker'
 import { BlurImage } from '../components/ui/BlurImage'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { EmptyState } from '../components/ui/EmptyState'
 import { useData } from '../hooks/useData'
-import { productTotals } from '../lib/calculations'
+import { useThemeContext } from '../hooks/themeContext'
+import { productTotals, productViews, productViralDays } from '../lib/calculations'
+import { STATUS_TINTS, STATUS_LABELS } from '../lib/constants'
 import { eur, num, pct } from '../lib/format'
+
+const VIRAL_THRESHOLD = 100_000
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { products, sales, videos, updateProduct, deleteProduct, loading } = useData()
+  const { products, sales, videos, notes, updateProduct, deleteProduct, loading } = useData()
+  const { isDark } = useThemeContext()
 
   const [editOpen, setEditOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -38,12 +42,25 @@ export function ProductDetailPage() {
   }
 
   const totals = productTotals(product.id, sales, videos, products)
+  const views = productViews(product.id, videos, notes)
+  const viral = productViralDays(product.id, videos, notes, VIRAL_THRESHOLD)
+
+  const tint = STATUS_TINTS[product.status]
+  const bg = isDark ? tint.darkBg : tint.lightBg
+  const border = isDark ? tint.darkBorder : tint.lightBorder
 
   const kpis = [
     { label: 'GMV total', value: eur(totals.gmv), icon: TrendingUp, accent: 'text-brand' },
-    { label: 'Comisión total', value: eur(totals.commission), icon: Coins, accent: 'text-accent' },
-    { label: 'Unidades totales', value: num(totals.units), icon: Package },
+    { label: 'Comisión', value: eur(totals.commission), icon: Coins, accent: 'text-accent' },
+    { label: 'Unidades vendidas', value: num(totals.units), icon: Package },
     { label: 'Vídeos hechos', value: num(totals.videos), icon: Film },
+    { label: 'Visualizaciones', value: num(views), icon: Eye },
+    {
+      label: 'Vídeos virales',
+      value: num(viral),
+      icon: Flame,
+      sub: `+${(VIRAL_THRESHOLD / 1000).toFixed(0)}k visualizaciones`,
+    },
   ]
 
   return (
@@ -62,24 +79,32 @@ export function ProductDetailPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl surface">
+      <div
+        className="overflow-hidden rounded-2xl border"
+        style={{ borderColor: border }}
+      >
         <BlurImage src={product.image_url} className="aspect-[16/9] w-full" />
-        <div className="p-5">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
-            <button onClick={() => setStatusOpen(true)} className="transition-transform hover:scale-105">
-              <StatusBadge status={product.status} />
-            </button>
-          </div>
+        <div
+          className="p-5"
+          style={{ backgroundColor: bg }}
+        >
+          <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
           <div className="mt-2 flex items-center gap-3 text-sm text-muted tnum">
             <span>Comisión {pct(product.commission_pct)}</span>
             <span className="opacity-40">·</span>
             <span>Precio {eur(product.price)}</span>
+            <button
+              onClick={() => setStatusOpen(true)}
+              className="ml-auto rounded-full px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:text-ink dark:hover:text-d-ink"
+              title="Cambiar estado"
+            >
+              {STATUS_LABELS[product.status]}
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         {kpis.map((k) => (
           <div key={k.label} className="surface rounded-2xl p-4">
             <div className="mb-2 flex items-center justify-between">
@@ -87,6 +112,9 @@ export function ProductDetailPage() {
               <k.icon size={16} className="text-muted" />
             </div>
             <div className={`text-2xl font-bold tnum ${k.accent ?? ''}`}>{k.value}</div>
+            {k.sub && (
+              <div className="mt-0.5 text-xs text-muted">{k.sub}</div>
+            )}
           </div>
         ))}
       </div>

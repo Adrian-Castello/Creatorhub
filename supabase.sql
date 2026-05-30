@@ -58,9 +58,24 @@ create index if not exists idx_sales_product_id on public.sales (product_id);
 create table if not exists public.day_notes (
   day_date    date primary key,
   notes       text not null default '',
-  visits      int not null default 0,
   updated_at  timestamptz not null default now()
 );
+
+-- -------------------------------------------------------------
+-- Tabla: day_views
+-- Visualizaciones por producto y día (se actualiza, no se duplica).
+-- -------------------------------------------------------------
+create table if not exists public.day_views (
+  id          uuid primary key default gen_random_uuid(),
+  day_date    date not null,
+  product_id  uuid not null references public.products(id) on delete cascade,
+  views       int not null default 0,
+  created_at  timestamptz not null default now(),
+  unique (day_date, product_id)
+);
+
+create index if not exists idx_day_views_day_date   on public.day_views (day_date);
+create index if not exists idx_day_views_product_id on public.day_views (product_id);
 
 -- -------------------------------------------------------------
 -- Tabla: app_settings (singleton, id = 1)
@@ -90,6 +105,7 @@ alter table public.products     enable row level security;
 alter table public.videos       enable row level security;
 alter table public.sales        enable row level security;
 alter table public.day_notes    enable row level security;
+alter table public.day_views    enable row level security;
 alter table public.app_settings enable row level security;
 
 -- products
@@ -106,6 +122,10 @@ create policy "anon_all_sales" on public.sales
 
 -- day_notes
 create policy "anon_all_day_notes" on public.day_notes
+  for all to anon using (true) with check (true);
+
+-- day_views
+create policy "anon_all_day_views" on public.day_views
   for all to anon using (true) with check (true);
 
 -- app_settings

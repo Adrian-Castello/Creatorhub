@@ -35,7 +35,7 @@ export function ProductCard({ product }: Props) {
           {product.name}
         </h3>
         <div className="mt-1 text-xs text-muted tnum">
-          {pct(product.commission_pct)} com.
+          {pct(product.commission_pct)} de comisión
         </div>
       </div>
     </motion.button>

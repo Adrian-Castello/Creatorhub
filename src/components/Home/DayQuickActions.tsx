@@ -16,6 +16,12 @@ export function DayQuickActions({ dayKey, onOpenDay }: Props) {
   const goal = settings.daily_video_goal
   const [pickerSlot, setPickerSlot] = useState<number | null>(null)
 
+  // No mostrar descartados en el picker para asignar a vídeos
+  const pickableProducts = useMemo(
+    () => products.filter((p) => p.status !== 'descartado'),
+    [products],
+  )
+
   const dayVideos = useMemo(
     () => videos.filter((v) => v.day_date === dayKey),
     [videos, dayKey],
@@ -110,7 +116,7 @@ export function DayQuickActions({ dayKey, onOpenDay }: Props) {
       <ProductPickerModal
         open={pickerSlot !== null}
         onClose={() => setPickerSlot(null)}
-        products={products}
+        products={pickableProducts}
         value={pickerVideo?.product_id ?? null}
         onPick={(pid) => {
           if (pickerSlot !== null) setVideo(dayKey, pickerSlot, pid)

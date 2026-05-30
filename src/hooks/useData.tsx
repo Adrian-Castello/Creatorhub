@@ -12,6 +12,7 @@ import { useToast } from './useToast'
 import type {
   AppSettings,
   DayNote,
+  DayView,
   Product,
   ProductStatus,
   Sale,
@@ -23,6 +24,7 @@ interface DataState {
   videos: Video[]
   sales: Sale[]
   notes: Record<string, DayNote>
+  dayViews: DayView[]
   settings: AppSettings
   loading: boolean
   configured: boolean
@@ -46,8 +48,12 @@ interface DataState {
   ) => Promise<void>
   deleteSale: (id: string) => Promise<void>
 
+  // Day views (visualizaciones por producto y día)
+  upsertDayView: (dayKey: string, productId: string, views: number) => Promise<void>
+  deleteDayView: (id: string) => Promise<void>
+
   // Notes
-  saveNote: (dayKey: string, patch: { notes?: string; visits?: number }) => Promise<void>
+  saveNote: (dayKey: string, text: string) => Promise<void>
 
   // Settings
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
@@ -68,6 +74,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [videos, setVideos] = useState<Video[]>([])
   const [sales, setSales] = useState<Sale[]>([])
   const [notes, setNotes] = useState<Record<string, DayNote>>({})
+  const [dayViews, setDayViews] = useState<DayView[]>([])
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [loading, setLoading] = useState(true)
 
@@ -79,6 +86,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setVideos(demo.demoVideos)
       setSales(demo.demoSales)
       setNotes(demo.demoNotes)
+      setDayViews(demo.demoDayViews ?? [])
       setSettings(demo.demoSettings)
       setLoading(false)
       return
@@ -89,23 +97,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true)
     try {
-      const [p, v, s, n, st] = await Promise.all([
+      const [p, v, s, n, dv, st] = await Promise.all([
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('videos').select('*'),
         supabase.from('sales').select('*'),
         supabase.from('day_notes').select('*'),
+        supabase.from('day_views').select('*'),
         supabase.from('app_settings').select('*').eq('id', 1).maybeSingle(),
       ])
       if (p.error) throw p.error
       if (v.error) throw v.error
       if (s.error) throw s.error
       if (n.error) throw n.error
+      // dv puede fallar si el usuario aún no ha ejecutado la migración v4:
+      // lo manejamos suavemente.
       setProducts((p.data as Product[]) ?? [])
       setVideos((v.data as Video[]) ?? [])
       setSales((s.data as Sale[]) ?? [])
       const noteMap: Record<string, DayNote> = {}
       ;((n.data as DayNote[]) ?? []).forEach((row) => (noteMap[row.day_date] = row))
       setNotes(noteMap)
+      if (dv.error) {
+        // Probablemente migración v4 no aplicada; avisamos una sola vez.
+        console.warn('day_views no disponible — ejecuta supabase-migration-v4.sql')
+        setDayViews([])
+      } else {
+        setDayViews((dv.data as DayView[]) ?? [])
+      }
       if (st.data) setSettings(st.data as AppSettings)
     } catch (e: any) {
       push('No se pudieron cargar los datos: ' + (e.message ?? 'error'), 'error')
@@ -309,13 +327,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // ---- Notes ----
   const saveNote = useCallback<DataState['saveNote']>(
-    async (dayKey, patch) => {
+    async (dayKey, text) => {
       const prev = notes
-      const current = notes[dayKey]
       const next: DayNote = {
         day_date: dayKey,
-        notes: patch.notes ?? current?.notes ?? '',
-        visits: patch.visits ?? current?.visits ?? 0,
+        notes: text,
         updated_at: new Date().toISOString(),
       }
       setNotes((cur) => ({ ...cur, [dayKey]: next }))
@@ -326,10 +342,69 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (error) throw error
       } catch (e: any) {
         setNotes(prev)
-        push('Error al guardar: ' + (e.message ?? ''), 'error')
+        push('Error al guardar nota: ' + (e.message ?? ''), 'error')
       }
     },
     [notes, push],
+  )
+
+  // ---- Day views (visualizaciones por producto) ----
+  const upsertDayView = useCallback<DataState['upsertDayView']>(
+    async (dayKey, productId, views) => {
+      const prev = dayViews
+      const existing = dayViews.find(
+        (v) => v.day_date === dayKey && v.product_id === productId,
+      )
+      const optimistic: DayView = existing
+        ? { ...existing, views }
+        : {
+            id: 'tmp-' + Math.random().toString(36).slice(2),
+            day_date: dayKey,
+            product_id: productId,
+            views,
+            created_at: new Date().toISOString(),
+          }
+      setDayViews((cur) =>
+        existing
+          ? cur.map((v) => (v.id === existing.id ? optimistic : v))
+          : [...cur, optimistic],
+      )
+      try {
+        const { data, error } = await supabase
+          .from('day_views')
+          .upsert(
+            { day_date: dayKey, product_id: productId, views },
+            { onConflict: 'day_date,product_id' },
+          )
+          .select()
+          .single()
+        if (error) throw error
+        if (data) {
+          setDayViews((cur) =>
+            cur.map((v) => (v.id === optimistic.id ? (data as DayView) : v)),
+          )
+        }
+      } catch (e: any) {
+        setDayViews(prev)
+        push('Error al guardar visualizaciones: ' + (e.message ?? ''), 'error')
+      }
+    },
+    [dayViews, push],
+  )
+
+  const deleteDayView = useCallback<DataState['deleteDayView']>(
+    async (id) => {
+      const prev = dayViews
+      setDayViews((cur) => cur.filter((v) => v.id !== id))
+      try {
+        const { error } = await supabase.from('day_views').delete().eq('id', id)
+        if (error) throw error
+      } catch (e: any) {
+        setDayViews(prev)
+        push('Error al eliminar: ' + (e.message ?? ''), 'error')
+      }
+    },
+    [dayViews, push],
   )
 
   // ---- Settings ----
@@ -359,6 +434,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         videos,
         sales,
         notes,
+        dayViews,
         settings,
         loading,
         configured: supabaseConfigured || import.meta.env.VITE_DEMO === '1',
@@ -370,6 +446,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         removeVideo,
         upsertSale,
         deleteSale,
+        upsertDayView,
+        deleteDayView,
         saveNote,
         updateSettings,
       }}

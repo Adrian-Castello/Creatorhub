@@ -18,7 +18,7 @@ const VIRAL_THRESHOLD = 100_000
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { products, sales, videos, notes, updateProduct, deleteProduct, loading } = useData()
+  const { products, sales, videos, dayViews, updateProduct, deleteProduct, loading } = useData()
   const { isDark } = useThemeContext()
 
   const [editOpen, setEditOpen] = useState(false)
@@ -42,8 +42,8 @@ export function ProductDetailPage() {
   }
 
   const totals = productTotals(product.id, sales, videos, products)
-  const views = productViews(product.id, videos, notes)
-  const viral = productViralDays(product.id, videos, notes, VIRAL_THRESHOLD)
+  const views = productViews(product.id, dayViews)
+  const viral = productViralDays(product.id, dayViews, VIRAL_THRESHOLD)
 
   const tint = STATUS_TINTS[product.status]
   const bg = isDark ? tint.darkBg : tint.lightBg

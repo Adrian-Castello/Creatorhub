@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, Eye, ImagePlus, Plus, Trash2 } from 'lucide-react'
+import { Check, ImagePlus, Plus, Trash2 } from 'lucide-react'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { ProductPickerModal } from '../ui/ProductPickerModal'
@@ -26,24 +26,25 @@ export function DayModal({ open, dayKey, onClose }: Props) {
     videos,
     sales,
     notes,
+    dayViews,
     settings,
     setVideo,
     removeVideo,
     upsertSale,
     deleteSale,
+    upsertDayView,
+    deleteDayView,
     saveNote,
   } = useData()
 
   const goal = settings.daily_video_goal
   const [noteText, setNoteText] = useState('')
-  const [visitsText, setVisitsText] = useState('')
   const [confettiFire, setConfettiFire] = useState(0)
   const [salePickerOpen, setSalePickerOpen] = useState(false)
+  const [viewsPickerOpen, setViewsPickerOpen] = useState(false)
   const [videoPickerSlot, setVideoPickerSlot] = useState<number | null>(null)
   const prevCompleted = useRef(0)
   const noteRef = useRef<HTMLTextAreaElement>(null)
-
-  const visitsNum = parseInt(visitsText) || 0
 
   const dayVideos = useMemo(
     () => videos.filter((v) => v.day_date === dayKey),
@@ -52,6 +53,10 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   const daySales = useMemo(
     () => sales.filter((s) => s.day_date === dayKey),
     [sales, dayKey],
+  )
+  const dayDayViews = useMemo(
+    () => dayViews.filter((v) => v.day_date === dayKey),
+    [dayViews, dayKey],
   )
   const productMap = useMemo(
     () => new Map(products.map((p) => [p.id, p])),
@@ -63,8 +68,6 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   useEffect(() => {
     if (dayKey) {
       setNoteText(notes[dayKey]?.notes ?? '')
-      const v = notes[dayKey]?.visits ?? 0
-      setVisitsText(v > 0 ? String(v) : '')
     }
   }, [dayKey, notes])
 
@@ -107,10 +110,16 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   }
 
   const usedProductIds = new Set(daySales.map((s) => s.product_id))
-  const availableForSale = products.filter((p) => !usedProductIds.has(p.id))
+  const availableForSale = products.filter(
+    (p) => !usedProductIds.has(p.id) && p.status !== 'descartado',
+  )
+  const usedViewsProductIds = new Set(dayDayViews.map((v) => v.product_id))
+  const availableForViews = products.filter(
+    (p) => !usedViewsProductIds.has(p.id) && p.status !== 'descartado',
+  )
 
   function handleClose() {
-    if (dayKey) saveNote(dayKey, { notes: noteText, visits: visitsNum })
+    if (dayKey) saveNote(dayKey, noteText)
     onClose()
   }
 
@@ -271,23 +280,71 @@ export function DayModal({ open, dayKey, onClose }: Props) {
           )}
         </section>
 
-        {/* Section 3: Visualizaciones */}
+        {/* Section 3: Visualizaciones por producto */}
         <section>
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
-            Visualizaciones conseguidas
-          </h3>
-          <div className="flex items-center gap-3 surface rounded-xl px-3 h-12 focus-within:border-brand/60">
-            <Eye size={18} className="text-muted shrink-0" />
-            <input
-              type="number"
-              min={0}
-              inputMode="numeric"
-              value={visitsText}
-              onChange={(e) => setVisitsText(e.target.value)}
-              placeholder="0"
-              className="flex-1 bg-transparent text-lg font-semibold outline-none tnum placeholder:text-muted placeholder:font-normal"
-            />
-            <span className="text-xs text-muted">visualizaciones</span>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
+              Visualizaciones
+            </h3>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setViewsPickerOpen(true)}
+              disabled={availableForViews.length === 0}
+            >
+              <Plus size={15} /> Añadir producto
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            {dayDayViews.length === 0 && (
+              <p className="rounded-xl border border-dashed hairline py-5 text-center text-sm text-muted">
+                Sin visualizaciones registradas
+              </p>
+            )}
+
+            <AnimatePresence>
+              {dayDayViews.map((dv) => {
+                const p = productMap.get(dv.product_id)
+                return (
+                  <motion.div
+                    key={dv.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    className="flex items-center gap-3 rounded-xl surface p-2.5"
+                  >
+                    {p?.image_url ? (
+                      <img src={p.image_url} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+                    ) : (
+                      <div className="h-9 w-9 shrink-0 rounded-lg bg-black/5 dark:bg-white/10" />
+                    )}
+                    <span className="flex-1 truncate text-sm font-medium">
+                      {p?.name ?? '—'}
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      inputMode="numeric"
+                      value={dv.views || ''}
+                      placeholder="0"
+                      onChange={(e) => {
+                        const n = parseInt(e.target.value) || 0
+                        if (dayKey) upsertDayView(dayKey, dv.product_id, n)
+                      }}
+                      className="w-28 rounded-lg border hairline bg-transparent px-2 py-1.5 text-right text-sm tnum outline-none focus:border-brand/60"
+                    />
+                    <button
+                      onClick={() => deleteDayView(dv.id)}
+                      className="rounded-lg p-1.5 text-muted transition-colors hover:bg-st-descartado/10 hover:text-st-descartado"
+                      aria-label="Eliminar"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
           </div>
         </section>
 
@@ -313,7 +370,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
       <ProductPickerModal
         open={videoPickerSlot !== null}
         onClose={() => setVideoPickerSlot(null)}
-        products={products}
+        products={products.filter((p) => p.status !== 'descartado')}
         value={
           videoPickerSlot !== null
             ? dayVideos.find((v) => v.slot === videoPickerSlot)?.product_id ?? null
@@ -334,6 +391,17 @@ export function DayModal({ open, dayKey, onClose }: Props) {
           if (dayKey) upsertSale(dayKey, pid, 0, 0)
         }}
         title="Añadir producto a las ventas"
+      />
+
+      <ProductPickerModal
+        open={viewsPickerOpen}
+        onClose={() => setViewsPickerOpen(false)}
+        products={availableForViews}
+        value={null}
+        onPick={(pid) => {
+          if (dayKey) upsertDayView(dayKey, pid, 0)
+        }}
+        title="Añadir producto a las visualizaciones"
       />
     </Modal>
   )

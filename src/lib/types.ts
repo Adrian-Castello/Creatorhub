@@ -35,8 +35,15 @@ export interface Sale {
 export interface DayNote {
   day_date: string
   notes: string
-  visits: number
   updated_at: string
+}
+
+export interface DayView {
+  id: string
+  day_date: string // YYYY-MM-DD
+  product_id: string
+  views: number
+  created_at: string
 }
 
 export interface AppSettings {

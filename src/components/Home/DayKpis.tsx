@@ -11,14 +11,21 @@ interface Props {
 }
 
 export function DayKpis({ dayKey }: Props) {
-  const { sales, videos, products, notes, settings } = useData()
+  const { sales, videos, products, dayViews, settings } = useData()
   const { isDark } = useThemeContext()
   const goal = settings.daily_video_goal
 
-  const totals = dayTotals(dayKey, sales, products, videos)
+  // Excluimos descartados de los cómputos del día (no son productos vivos)
+  const activeProducts = products.filter((p) => p.status !== 'descartado')
+
+  const totals = dayTotals(dayKey, sales, activeProducts, videos)
   const level = dayColorLevel(totals.videos, goal)
   const levelColor = isDark ? COLOR_LEVELS[level].dark : COLOR_LEVELS[level].light
-  const visits = notes[dayKey]?.visits ?? 0
+  // Suma de visualizaciones de productos vivos para este día
+  const activeIds = new Set(activeProducts.map((p) => p.id))
+  const visits = dayViews
+    .filter((v) => v.day_date === dayKey && activeIds.has(v.product_id))
+    .reduce((acc, v) => acc + v.views, 0)
   const progress = Math.min(100, (totals.videos / Math.max(1, goal)) * 100)
 
   const cards = [

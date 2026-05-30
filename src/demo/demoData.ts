@@ -1,4 +1,4 @@
-import type { AppSettings, DayNote, Product, Sale, Video } from '../lib/types'
+import type { AppSettings, DayNote, DayView, Product, Sale, Video } from '../lib/types'
 import { toKey } from '../lib/dates'
 
 // Demo seed used ONLY when VITE_DEMO=1 (for screenshots / previews).
@@ -62,9 +62,19 @@ for (let d = 0; d < 40; d++) {
 export const demoSales = sales
 
 export const demoNotes: Record<string, DayNote> = {
-  [daysAgo(0)]: { day_date: daysAgo(0), notes: '', visits: 12450, updated_at: daysAgo(0) },
-  [daysAgo(1)]: { day_date: daysAgo(1), notes: 'El proyector volvió a despuntar. Probar nuevo hook en el vídeo 3.', visits: 8930, updated_at: daysAgo(1) },
-  [daysAgo(2)]: { day_date: daysAgo(2), notes: '', visits: 15200, updated_at: daysAgo(2) },
+  [daysAgo(1)]: { day_date: daysAgo(1), notes: 'El proyector volvió a despuntar. Probar nuevo hook en el vídeo 3.', updated_at: daysAgo(1) },
 }
+
+export const demoDayViews: DayView[] = [
+  // Hoy
+  { id: 'dv1', day_date: daysAgo(0), product_id: 'p1', views: 145000, created_at: daysAgo(0) }, // Proyector
+  { id: 'dv2', day_date: daysAgo(0), product_id: 'p2', views: 8200, created_at: daysAgo(0) },   // Auriculares
+  { id: 'dv3', day_date: daysAgo(0), product_id: 'p4', views: 3500, created_at: daysAgo(0) },   // Cables
+  // Ayer
+  { id: 'dv4', day_date: daysAgo(1), product_id: 'p1', views: 220000, created_at: daysAgo(1) },
+  { id: 'dv5', day_date: daysAgo(1), product_id: 'p3', views: 12400, created_at: daysAgo(1) },  // Lámpara
+  // Antesdeayer
+  { id: 'dv6', day_date: daysAgo(2), product_id: 'p2', views: 45200, created_at: daysAgo(2) },
+]
 
 export const demoSettings: AppSettings = { id: 1, daily_video_goal: 5, user_name: 'Adrián', updated_at: new Date().toISOString() }

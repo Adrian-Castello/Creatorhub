@@ -1,8 +1,8 @@
 export type ProductStatus =
-  | 'nuevo'
+  | 'solicitado'
+  | 'recibido'
   | 'testeando'
   | 'activo'
-  | 'pausado'
   | 'descartado'
 
 export interface Product {

@@ -27,9 +27,9 @@ export const demoProducts: Product[] = [
   { id: 'p2', name: 'Auriculares inalámbricos ANC', image_url: img('#06B6D4', '#0E7490', 'Auriculares'), commission_pct: 12, price: 29.9, status: 'activo', created_at: daysAgo(35) },
   { id: 'p3', name: 'Lámpara LED de escritorio RGB', image_url: img('#F59E0B', '#B45309', 'Lámpara'), commission_pct: 18, price: 19.99, status: 'testeando', created_at: daysAgo(20) },
   { id: 'p4', name: 'Organizador de cables magnético', image_url: img('#10B981', '#047857', 'Cables'), commission_pct: 22.5, price: 9.99, status: 'activo', created_at: daysAgo(28) },
-  { id: 'p5', name: 'Botella térmica acero 750ml', image_url: img('#64748B', '#334155', 'Botella'), commission_pct: 15, price: 24.5, status: 'pausado', created_at: daysAgo(50) },
+  { id: 'p5', name: 'Botella térmica acero 750ml', image_url: img('#64748B', '#334155', 'Botella'), commission_pct: 15, price: 24.5, status: 'recibido', created_at: daysAgo(50) },
   { id: 'p6', name: 'Soporte de móvil para coche', image_url: img('#EC4899', '#9D174D', 'Soporte'), commission_pct: 20, price: 14.99, status: 'testeando', created_at: daysAgo(12) },
-  { id: 'p7', name: 'Teclado mecánico 60% RGB', image_url: img('#3B82F6', '#1D4ED8', 'Teclado'), commission_pct: 10.5, price: 59.0, status: 'nuevo', created_at: daysAgo(5) },
+  { id: 'p7', name: 'Teclado mecánico 60% RGB', image_url: img('#3B82F6', '#1D4ED8', 'Teclado'), commission_pct: 10.5, price: 59.0, status: 'solicitado', created_at: daysAgo(5) },
   { id: 'p8', name: 'Funda silicona AirPods Pro', image_url: img('#EF4444', '#991B1B', 'Funda'), commission_pct: 25, price: 7.99, status: 'descartado', created_at: daysAgo(60) },
 ]
 

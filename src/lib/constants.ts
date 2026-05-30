@@ -4,28 +4,28 @@ export const APP_NAME = 'Creatorhub'
 export const APP_VERSION = '1.0.0'
 
 export const STATUSES: ProductStatus[] = [
-  'nuevo',
+  'solicitado',
+  'recibido',
   'testeando',
   'activo',
-  'pausado',
   'descartado',
 ]
 
 export const STATUS_LABELS: Record<ProductStatus, string> = {
-  nuevo: 'Nuevo',
+  solicitado: 'Solicitado',
+  recibido: 'Recibido',
   testeando: 'Testeando',
   activo: 'Activo',
-  pausado: 'Pausado',
   descartado: 'Descartado',
 }
 
 // Tailwind-friendly hex per status (matches palette in spec)
 export const STATUS_COLORS: Record<ProductStatus, string> = {
-  nuevo: '#3B82F6',
-  testeando: '#F59E0B',
-  activo: '#10B981',
-  pausado: '#6B7280',
-  descartado: '#EF4444',
+  solicitado: '#6B7280', // gris — esperando
+  recibido: '#3B82F6',   // azul — ya llegó, pendiente de probar
+  testeando: '#F59E0B',  // ámbar — probando
+  activo: '#10B981',     // verde — funciona
+  descartado: '#EF4444', // rojo — no funcionó
 }
 
 // 5-level day color scale. Index 0..5 = level returned by dayColorLevel.

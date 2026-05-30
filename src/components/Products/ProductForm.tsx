@@ -21,7 +21,7 @@ export function ProductForm({ open, onClose, product }: Props) {
   const [name, setName] = useState('')
   const [commission, setCommission] = useState('')
   const [price, setPrice] = useState('')
-  const [status, setStatus] = useState<ProductStatus>('nuevo')
+  const [status, setStatus] = useState<ProductStatus>('solicitado')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -30,7 +30,7 @@ export function ProductForm({ open, onClose, product }: Props) {
       setName(product?.name ?? '')
       setCommission(product ? String(product.commission_pct) : '')
       setPrice(product ? String(product.price) : '')
-      setStatus(product?.status ?? 'nuevo')
+      setStatus(product?.status ?? 'solicitado')
       setImageUrl(product?.image_url ?? null)
     }
   }, [open, product])

@@ -42,7 +42,7 @@ export function DayKpis({ dayKey }: Props) {
       accent: 'text-accent',
     },
     {
-      label: 'Visitas',
+      label: 'Visualizaciones',
       value: num(visits),
       icon: Eye,
     },

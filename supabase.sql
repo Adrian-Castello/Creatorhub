@@ -15,8 +15,8 @@ create table if not exists public.products (
   image_url      text,
   commission_pct numeric(5,2) not null default 0,
   price          numeric(10,2) not null default 0,
-  status         text not null default 'nuevo'
-                 check (status in ('nuevo','testeando','activo','pausado','descartado')),
+  status         text not null default 'solicitado'
+                 check (status in ('solicitado','recibido','testeando','activo','descartado')),
   created_at     timestamptz not null default now()
 );
 

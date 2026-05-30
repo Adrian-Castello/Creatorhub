@@ -271,10 +271,10 @@ export function DayModal({ open, dayKey, onClose }: Props) {
           )}
         </section>
 
-        {/* Section 3: Visitas */}
+        {/* Section 3: Visualizaciones */}
         <section>
           <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
-            Visitas conseguidas
+            Visualizaciones conseguidas
           </h3>
           <div className="flex items-center gap-3 surface rounded-xl px-3 h-12 focus-within:border-brand/60">
             <Eye size={18} className="text-muted shrink-0" />
@@ -287,7 +287,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
               placeholder="0"
               className="flex-1 bg-transparent text-lg font-semibold outline-none tnum placeholder:text-muted placeholder:font-normal"
             />
-            <span className="text-xs text-muted">visitas</span>
+            <span className="text-xs text-muted">visualizaciones</span>
           </div>
         </section>
 

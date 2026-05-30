@@ -31,10 +31,10 @@ export default {
         'd-sub': '#A1A1AA',
         // Product status
         st: {
-          nuevo: '#3B82F6',
+          solicitado: '#6B7280',
+          recibido: '#3B82F6',
           testeando: '#F59E0B',
           activo: '#10B981',
-          pausado: '#6B7280',
           descartado: '#EF4444',
         },
       },

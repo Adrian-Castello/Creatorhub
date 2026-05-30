@@ -26,15 +26,13 @@ export function saleCommission(sale: Sale, product: Product | undefined): number
  * Nivel de color del día (0..5) según vídeos cumplidos vs objetivo.
  * 0 vídeos -> 0. Si no, se escala por % cumplido.
  */
-export function dayColorLevel(videosCount: number, goal: number): 0 | 1 | 2 | 3 | 4 | 5 {
+export function dayColorLevel(videosCount: number, _goal: number): 0 | 1 | 2 | 3 | 4 | 5 {
   if (videosCount <= 0) return 0
-  const g = goal > 0 ? goal : 1
-  const pct = videosCount / g
-  if (pct >= 1) return 5
-  if (pct >= 0.8) return 4
-  if (pct >= 0.6) return 3
-  if (pct >= 0.2) return videosCount >= 2 ? 2 : 1
-  return 1
+  if (videosCount === 1) return 1   // rojo
+  if (videosCount === 2) return 2   // naranja
+  if (videosCount === 3) return 3   // verde claro
+  if (videosCount === 4) return 4   // verde medio
+  return 5                          // 5 o más → verde fuerte
 }
 
 export interface DayTotals {

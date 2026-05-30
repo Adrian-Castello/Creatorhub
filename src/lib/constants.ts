@@ -72,12 +72,13 @@ export const STATUS_TINTS: Record<
 // 5-level day color scale. Index 0..5 = level returned by dayColorLevel.
 // Each entry: background for light & dark mode.
 export const COLOR_LEVELS: { light: string; dark: string }[] = [
-  { light: '#FCA5A5', dark: '#7F1D1D' }, // 0  — 0% (rojo)
-  { light: '#FDBA74', dark: '#9A3412' }, // 1  — 20-40% (naranja)
-  { light: '#FDBA74', dark: '#9A3412' }, // 2  — 20-40% (naranja)
-  { light: '#FDE68A', dark: '#92400E' }, // 3  — 60% (amarillo)
-  { light: '#86EFAC', dark: '#166534' }, // 4  — 80% (verde claro)
-  { light: '#22C55E', dark: '#16A34A' }, // 5  — 100%+ (verde fuerte)
+  { light: '#F3F4F6', dark: '#1F2024' }, // 0 — sin actividad (gris muy suave)
+  { light: '#F87171', dark: '#7F1D1D' }, // 1 — bajo (rojo)
+  { light: '#FB923C', dark: '#9A3412' }, // 2 — medio-bajo (naranja)
+  { light: '#86EFAC', dark: '#166534' }, // 3 — medio (verde claro)
+  { light: '#4ADE80', dark: '#15803D' }, // 4 — alto (verde medio)
+  { light: '#22C55E', dark: '#16A34A' }, // 5 — top (verde fuerte)
+  { light: '#FACC15', dark: '#A16207' }, // 6 — premium / día increíble (amarillo dorado)
 ]
 
 export const DEFAULT_VIDEO_GOAL = 5

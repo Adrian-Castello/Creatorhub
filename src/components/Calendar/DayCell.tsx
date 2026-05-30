@@ -21,12 +21,14 @@ interface Props {
 }
 
 // Niveles de color para monetización: del más bajo al más alto GMV.
-function monetizationLevel(gmv: number): 0 | 1 | 2 | 3 | 4 {
+function monetizationLevel(gmv: number): 0 | 1 | 2 | 3 | 4 | 5 | 6 {
   if (gmv <= 0) return 0
-  if (gmv < 10) return 1
-  if (gmv < 50) return 2
-  if (gmv < 150) return 3
-  return 4
+  if (gmv < 100) return 1    // rojo
+  if (gmv < 200) return 2    // naranja
+  if (gmv < 400) return 3    // verde claro
+  if (gmv < 600) return 4    // verde medio
+  if (gmv < 900) return 5    // verde fuerte
+  return 6                   // ≥ 900 — día increíble (amarillo premium)
 }
 
 export function DayCell({

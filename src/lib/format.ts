@@ -8,8 +8,8 @@ export function eur(n: number): string {
 
 export function eurCompact(n: number): string {
   if (n === 0) return '0€'
-  if (n >= 1000) return `${(n / 1000).toFixed(1).replace('.0', '')}k€`
-  return `${Math.round(n)}€`
+  // Entero redondeado con separador de miles (es-ES usa punto: 1.000, 12.345)
+  return `${new Intl.NumberFormat('es-ES').format(Math.round(n))}€`
 }
 
 export function num(n: number): string {

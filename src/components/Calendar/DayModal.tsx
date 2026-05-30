@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ImagePlus, Plus, Trash2 } from 'lucide-react'
+import { Check, ImagePlus, Plus, Sparkles, Trash2 } from 'lucide-react'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { ProductPickerModal } from '../ui/ProductPickerModal'
+import { ImportFromScreenshotModal } from '../ui/ImportFromScreenshotModal'
 import { Confetti } from '../ui/Confetti'
 import { useData } from '../../hooks/useData'
 import { fromKey, formatLongDate } from '../../lib/dates'
@@ -43,6 +44,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   const [salePickerOpen, setSalePickerOpen] = useState(false)
   const [viewsPickerOpen, setViewsPickerOpen] = useState(false)
   const [videoPickerSlot, setVideoPickerSlot] = useState<number | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
   const prevCompleted = useRef(0)
   const noteRef = useRef<HTMLTextAreaElement>(null)
 
@@ -129,6 +131,14 @@ export function DayModal({ open, dayKey, onClose }: Props) {
       }
       footer={
         <>
+          <Button
+            variant="secondary"
+            onClick={() => setImportOpen(true)}
+            className="mr-auto"
+            title="Importar datos del día desde una captura de TikTok Shop"
+          >
+            <Sparkles size={15} /> Importar de captura
+          </Button>
           <Button variant="ghost" onClick={onClose}>
             Cerrar
           </Button>
@@ -399,6 +409,14 @@ export function DayModal({ open, dayKey, onClose }: Props) {
         }}
         title="Añadir producto a las visualizaciones"
       />
+
+      {dayKey && (
+        <ImportFromScreenshotModal
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          dayKey={dayKey}
+        />
+      )}
     </Modal>
   )
 }

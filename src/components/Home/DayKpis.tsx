@@ -15,16 +15,12 @@ export function DayKpis({ dayKey }: Props) {
   const { isDark } = useThemeContext()
   const goal = settings.daily_video_goal
 
-  // Excluimos descartados de los cómputos del día (no son productos vivos)
-  const activeProducts = products.filter((p) => p.status !== 'descartado')
-
-  const totals = dayTotals(dayKey, sales, activeProducts, videos)
+  const totals = dayTotals(dayKey, sales, products, videos)
   const level = dayColorLevel(totals.videos, goal)
   const levelColor = isDark ? COLOR_LEVELS[level].dark : COLOR_LEVELS[level].light
-  // Suma de visualizaciones de productos vivos para este día
-  const activeIds = new Set(activeProducts.map((p) => p.id))
+  // Suma TODAS las visualizaciones del día (incluidos productos descartados)
   const visits = dayViews
-    .filter((v) => v.day_date === dayKey && activeIds.has(v.product_id))
+    .filter((v) => v.day_date === dayKey)
     .reduce((acc, v) => acc + v.views, 0)
   const progress = Math.min(100, (totals.videos / Math.max(1, goal)) * 100)
 

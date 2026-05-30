@@ -37,9 +37,10 @@ export function ProductsPage() {
   const orderedStatus: ProductStatus[] = ['solicitado', 'recibido', 'testeando', 'activo', 'descartado']
   const visible = useMemo(() => {
     if (filter === 'todos') {
-      return [...products].sort(
-        (a, b) => orderedStatus.indexOf(a.status) - orderedStatus.indexOf(b.status),
-      )
+      // En "Todos" no mostramos descartados (van bajo su propio filtro)
+      return [...products]
+        .filter((p) => p.status !== 'descartado')
+        .sort((a, b) => orderedStatus.indexOf(a.status) - orderedStatus.indexOf(b.status))
     }
     return products.filter((p) => p.status === filter)
   }, [products, filter])

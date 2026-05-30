@@ -110,13 +110,9 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   }
 
   const usedProductIds = new Set(daySales.map((s) => s.product_id))
-  const availableForSale = products.filter(
-    (p) => !usedProductIds.has(p.id) && p.status !== 'descartado',
-  )
+  const availableForSale = products.filter((p) => !usedProductIds.has(p.id))
   const usedViewsProductIds = new Set(dayDayViews.map((v) => v.product_id))
-  const availableForViews = products.filter(
-    (p) => !usedViewsProductIds.has(p.id) && p.status !== 'descartado',
-  )
+  const availableForViews = products.filter((p) => !usedViewsProductIds.has(p.id))
 
   function handleClose() {
     if (dayKey) saveNote(dayKey, noteText)
@@ -370,7 +366,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
       <ProductPickerModal
         open={videoPickerSlot !== null}
         onClose={() => setVideoPickerSlot(null)}
-        products={products.filter((p) => p.status !== 'descartado')}
+        products={products}
         value={
           videoPickerSlot !== null
             ? dayVideos.find((v) => v.slot === videoPickerSlot)?.product_id ?? null

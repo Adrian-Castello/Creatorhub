@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Award, Coins, Eye, Film, Package, Pencil, ShoppingBag, TrendingUp, Trash2 } from 'lucide-react'
 import { ProductForm } from '../components/Products/ProductForm'
@@ -10,7 +11,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { useData } from '../hooks/useData'
 import { useThemeContext } from '../hooks/themeContext'
 import { productTotals, productViews } from '../lib/calculations'
-import { PRODUCT_TIERS, productTier, STATUS_COLORS, STATUS_LABELS, STATUS_TINTS } from '../lib/constants'
+import { PRODUCT_TIERS, productTier, STATUS_COLORS, STATUS_TINTS } from '../lib/constants'
 import { eur, num, pct } from '../lib/format'
 
 export function ProductDetailPage() {
@@ -46,7 +47,6 @@ export function ProductDetailPage() {
   const tint = STATUS_TINTS[product.status]
   const bg = isDark ? tint.darkBg : tint.lightBg
   const statusColor = STATUS_COLORS[product.status]
-  const statusBgChip = isDark ? `${statusColor}33` : `${statusColor}1A` // 20%/10% alpha hex
   const statusFgChip = statusColor
 
   // Tier visualización
@@ -73,34 +73,29 @@ export function ProductDetailPage() {
         </div>
       </div>
 
-      <div>
-        <div className="overflow-hidden rounded-2xl">
-          <BlurImage src={product.image_url} className="aspect-[16/9] w-full" />
-        </div>
-        <div
-          className="-mt-3 rounded-2xl p-5"
-          style={{
-            backgroundColor: bg,
-            border: `2px solid ${statusColor}`,
-          }}
-        >
+      <motion.button
+        type="button"
+        onClick={() => setStatusOpen(true)}
+        whileHover={{ scale: 1.005 }}
+        whileTap={{ scale: 0.995 }}
+        title="Pulsa para cambiar el estado"
+        className="block w-full overflow-hidden rounded-2xl text-left"
+        style={{ border: `2px solid ${statusColor}` }}
+      >
+        <BlurImage src={product.image_url} className="aspect-[16/9] w-full" />
+        <div className="p-5" style={{ backgroundColor: bg }}>
           <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
-          <div className="mt-2 flex items-end justify-between gap-3">
+          <div className="mt-2 flex items-center justify-between gap-3">
             <div className="text-sm text-muted tnum">
               Comisión {pct(product.commission_pct)}
             </div>
-            <button
-              onClick={() => setStatusOpen(true)}
-              title="Cambiar estado"
-              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all hover:scale-105"
-              style={{ backgroundColor: statusBgChip, color: statusFgChip }}
-            >
+            <div className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: statusFgChip }}>
               <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
-              {STATUS_LABELS[product.status]}
-            </button>
+              Toca para cambiar el estado
+            </div>
           </div>
         </div>
-      </div>
+      </motion.button>
 
       {/* 6 KPIs en rejilla simétrica 2×3 */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">

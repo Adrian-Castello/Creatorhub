@@ -3,7 +3,7 @@ import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
 import { ImageUploader } from '../ui/ImageUploader'
-import { StatusPicker } from './StatusPicker'
+import { StatusCarousel } from './StatusCarousel'
 import type { Product, ProductStatus } from '../../lib/types'
 import { useData } from '../../hooks/useData'
 
@@ -105,7 +105,7 @@ export function ProductForm({ open, onClose, product }: Props) {
 
         <div>
           <span className="mb-2 block text-sm font-medium text-muted">Estado</span>
-          <StatusPicker value={status} onChange={setStatus} />
+          <StatusCarousel value={status} onChange={setStatus} />
         </div>
       </div>
     </Modal>

@@ -4,7 +4,6 @@ import { Check, ImagePlus, Receipt } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { ProductPickerModal } from '../ui/ProductPickerModal'
 import { useData } from '../../hooks/useData'
-import { STATUS_COLORS } from '../../lib/constants'
 
 interface Props {
   dayKey: string
@@ -86,17 +85,11 @@ export function DayQuickActions({ dayKey, onOpenDay }: Props) {
                   className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl surface transition-all hover:border-brand/40 hover:scale-105"
                 >
                   {product?.image_url ? (
-                    <>
-                      <img
-                        src={product.image_url}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                      <span
-                        className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card dark:ring-d-card"
-                        style={{ backgroundColor: STATUS_COLORS[product.status] }}
-                      />
-                    </>
+                    <img
+                      src={product.image_url}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <ImagePlus size={18} className="text-muted" />
                   )}

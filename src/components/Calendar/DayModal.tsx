@@ -9,7 +9,6 @@ import { Confetti } from '../ui/Confetti'
 import { useData } from '../../hooks/useData'
 import { fromKey, formatLongDate } from '../../lib/dates'
 import { saleCommission } from '../../lib/calculations'
-import { STATUS_COLORS } from '../../lib/constants'
 import { eur } from '../../lib/format'
 import type { Product } from '../../lib/types'
 
@@ -177,17 +176,11 @@ export function DayModal({ open, dayKey, onClose }: Props) {
                       className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl surface transition-all hover:border-brand/40 hover:scale-105"
                     >
                       {video?.product_id && productMap.get(video.product_id)?.image_url ? (
-                        <>
-                          <img
-                            src={productMap.get(video.product_id)!.image_url!}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                          <span
-                            className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card dark:ring-d-card"
-                            style={{ backgroundColor: STATUS_COLORS[productMap.get(video.product_id)!.status] }}
-                          />
-                        </>
+                        <img
+                          src={productMap.get(video.product_id)!.image_url!}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <ImagePlus size={18} className="text-muted" />
                       )}

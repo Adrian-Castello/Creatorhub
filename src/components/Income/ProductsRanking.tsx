@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Crown } from 'lucide-react'
 import type { ProductRankRow } from '../../lib/calculations'
 import { BlurImage } from '../ui/BlurImage'
-import { eur, num, pct } from '../../lib/format'
+import { eur, num } from '../../lib/format'
 
 export function ProductsRanking({ rows }: { rows: ProductRankRow[] }) {
   const navigate = useNavigate()
@@ -53,10 +53,8 @@ export function ProductsRanking({ rows }: { rows: ProductRankRow[] }) {
                 <div className="truncate text-sm font-semibold sm:text-base">
                   {r.product.name}
                 </div>
-                <div className="mt-0.5 flex items-center gap-2 text-xs text-muted tnum">
-                  <span>{num(r.units)} uds</span>
-                  <span className="opacity-40">·</span>
-                  <span>{pct(r.pctOfTotal)} del total</span>
+                <div className="mt-0.5 text-xs text-muted tnum">
+                  {num(r.units)} {r.units === 1 ? 'unidad vendida' : 'unidades vendidas'}
                 </div>
               </div>
 

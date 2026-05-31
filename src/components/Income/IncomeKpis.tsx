@@ -17,6 +17,11 @@ export function IncomeKpis({ current, previous }: Props) {
     { label: 'Vídeos subidos', value: num(current.videos), cur: current.videos, prev: previous?.videos, isCurrency: false },
   ]
 
+  // ¿Hay datos en el período anterior? (si todo está a 0, lo consideramos vacío)
+  const hasPrevData = previous
+    ? previous.gmv > 0 || previous.commission > 0 || previous.units > 0 || previous.videos > 0
+    : false
+
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {items.map((it, i) => {
@@ -36,21 +41,25 @@ export function IncomeKpis({ current, previous }: Props) {
             </div>
             {previous && (
               <div className="mt-1.5 flex items-center gap-1.5 text-xs">
-                {delta === null ? (
+                {!hasPrevData ? (
+                  <span className="truncate text-muted">Sin registros anteriores</span>
+                ) : delta === null ? (
                   <span className="text-muted">—</span>
                 ) : (
-                  <span
-                    className={`flex items-center gap-0.5 font-medium ${
-                      up ? 'text-st-activo' : 'text-st-descartado'
-                    }`}
-                  >
-                    {up ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
-                    {signedPct(delta)}
-                  </span>
+                  <>
+                    <span
+                      className={`flex items-center gap-0.5 font-medium ${
+                        up ? 'text-st-activo' : 'text-st-descartado'
+                      }`}
+                    >
+                      {up ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+                      {signedPct(delta)}
+                    </span>
+                    <span className="text-muted tnum">
+                      {it.isCurrency ? eur(it.prev ?? 0) : num(it.prev ?? 0)}
+                    </span>
+                  </>
                 )}
-                <span className="text-muted tnum">
-                  {it.isCurrency ? eur(it.prev ?? 0) : num(it.prev ?? 0)} ant.
-                </span>
               </div>
             )}
           </motion.div>

@@ -66,7 +66,7 @@ export function ProductDetailPage() {
           <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
             <Pencil size={15} /> Editar
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(true)}>
+          <Button variant="secondary" size="sm" onClick={() => setConfirmDelete(true)}>
             <Trash2 size={15} className="text-st-descartado" />
           </Button>
         </div>
@@ -134,14 +134,12 @@ export function ProductDetailPage() {
               </span>
             </div>
           ) : (
-            <div>
-              <span className="text-2xl font-bold tnum" style={{ color: scoreFg, opacity: 0.5 }}>
-                —
-              </span>
-              <p className="mt-1 text-[11px]" style={{ color: scoreFg, opacity: 0.6 }}>
-                Necesita más views
-              </p>
-            </div>
+            <p
+              className="text-sm font-semibold leading-tight"
+              style={{ color: scoreFg, opacity: 0.7 }}
+            >
+              Necesita más views
+            </p>
           )}
         </div>
       </div>

@@ -4,8 +4,8 @@ const PERIODS: { value: Period; label: string }[] = [
   { value: 'day', label: 'Día' },
   { value: 'week', label: 'Semana' },
   { value: 'month', label: 'Mes' },
+  { value: 'all', label: 'Histórico' },
   { value: 'custom', label: 'Personalizado' },
-  { value: 'all', label: 'Todo' },
 ]
 
 interface Props {
@@ -16,6 +16,12 @@ interface Props {
 }
 
 export function PeriodSelector({ period, onPeriod, compare, onCompare }: Props) {
+  const compareLabel =
+    period === 'day' ? 'Comparar con el día anterior'
+    : period === 'week' ? 'Comparar con la semana anterior'
+    : period === 'month' ? 'Comparar con el mes anterior'
+    : 'Comparar con el período anterior' // custom
+
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="inline-flex rounded-xl surface p-1">
@@ -50,7 +56,7 @@ export function PeriodSelector({ period, onPeriod, compare, onCompare }: Props) 
               }`}
             />
           </button>
-          <span className="text-muted">Comparar con período anterior</span>
+          <span className="text-muted">{compareLabel}</span>
         </label>
       )}
     </div>

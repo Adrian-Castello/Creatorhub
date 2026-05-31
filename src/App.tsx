@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import {
   HashRouter,
   Navigate,
   Route,
   Routes,
+  useLocation,
 } from 'react-router-dom'
 import { Sidebar } from './components/ui/Sidebar'
 import { BottomNav } from './components/ui/BottomNav'
@@ -33,14 +35,22 @@ function ConfigBanner() {
   )
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
+  }, [pathname])
+  return null
+}
+
 function Layout() {
   return (
     <div className="flex min-h-screen">
+      <ScrollToTop />
       <Sidebar />
 
       <main
-        className="flex-1 overflow-x-hidden px-4 pb-32 md:px-8 md:pb-16 md:pt-6"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}
+        className="flex-1 overflow-x-hidden px-4 pb-32 pt-6 md:px-8 md:pb-16"
       >
         <div className="mx-auto w-full max-w-6xl">
           <ConfigBanner />

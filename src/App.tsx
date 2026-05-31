@@ -38,7 +38,10 @@ function Layout() {
     <div className="flex min-h-screen">
       <Sidebar />
 
-      <main className="flex-1 overflow-x-hidden px-4 pb-32 pt-6 md:px-8 md:pb-16">
+      <main
+        className="flex-1 overflow-x-hidden px-4 pb-32 md:px-8 md:pb-16 md:pt-6"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' }}
+      >
         <div className="mx-auto w-full max-w-6xl">
           <ConfigBanner />
           <Routes>

@@ -128,8 +128,8 @@ const SCORE_COLORS: Array<{ color: string; bgLight: string; bgDark: string }> = 
   { color: '#22C55E', bgLight: '#DCFCE7', bgDark: '#0F3D1A' },
   // 9: verde fuerte
   { color: '#16A34A', bgLight: '#BBF7D0', bgDark: '#0E3F1B' },
-  // 10: dorado premium
-  { color: '#CA8A04', bgLight: '#FEF3C7', bgDark: '#5C4308' },
+  // 10: diamante (azul cian premium)
+  { color: '#0E7490', bgLight: '#CFFAFE', bgDark: '#155E75' },
 ]
 
 export function productScore(

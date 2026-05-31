@@ -111,7 +111,7 @@ export function ProductDetailPage() {
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: scoreFg, opacity: 0.85 }}>
-              Calificación
+              Puntuación
             </span>
             <Award size={18} style={{ color: scoreFg }} />
           </div>

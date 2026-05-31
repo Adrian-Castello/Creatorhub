@@ -7,19 +7,19 @@ import { Dropdown } from '../components/ui/Dropdown'
 import { EmptyState } from '../components/ui/EmptyState'
 import { SkeletonCard } from '../components/ui/Skeleton'
 import { useData } from '../hooks/useData'
-import { STATUS_LABELS } from '../lib/constants'
+import { STATUS_COLORS } from '../lib/constants'
 import { num } from '../lib/format'
 import type { ProductStatus } from '../lib/types'
 
 type Filter = 'todos' | ProductStatus
 
-const FILTER_OPTIONS: { value: Filter; label: string }[] = [
+const FILTER_OPTIONS: { value: Filter; label: string; color?: string }[] = [
   { value: 'todos', label: 'Todos' },
-  { value: 'solicitado', label: STATUS_LABELS.solicitado },
-  { value: 'recibido', label: STATUS_LABELS.recibido },
-  { value: 'testeando', label: STATUS_LABELS.testeando },
-  { value: 'activo', label: STATUS_LABELS.activo },
-  { value: 'descartado', label: STATUS_LABELS.descartado },
+  { value: 'solicitado', label: 'Solicitados', color: STATUS_COLORS.solicitado },
+  { value: 'recibido', label: 'Recibidos', color: STATUS_COLORS.recibido },
+  { value: 'testeando', label: 'Testeando', color: STATUS_COLORS.testeando },
+  { value: 'activo', label: 'Activos', color: STATUS_COLORS.activo },
+  { value: 'descartado', label: 'Descartados', color: STATUS_COLORS.descartado },
 ]
 
 export function ProductsPage() {

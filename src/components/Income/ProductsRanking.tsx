@@ -5,25 +5,23 @@ import type { ProductRankRow } from '../../lib/calculations'
 import { BlurImage } from '../ui/BlurImage'
 import { eur, num } from '../../lib/format'
 
-// Colores top: 1=oro, 2=plata, 3=bronce, 4-10=marca, 11+=neutro
-function rankTone(i: number): { bar: string; barAlpha: string } {
-  if (i === 0) return { bar: '#FACC15', barAlpha: 'rgba(250, 204, 21, 0.10)' } // oro
-  if (i === 1) return { bar: '#94A3B8', barAlpha: 'rgba(148, 163, 184, 0.10)' } // plata
-  if (i === 2) return { bar: '#B45309', barAlpha: 'rgba(180, 83, 9, 0.10)' } // bronce
-  if (i < 10) return { bar: '#8B5CF6', barAlpha: 'rgba(139, 92, 246, 0.06)' } // marca
-  return { bar: '#6B7280', barAlpha: 'rgba(107, 114, 128, 0.04)' } // neutro
+// Top 3 = oro / plata / bronce con corona del mismo color
+// Top 4+ = numero en color neutro gris-tipográfico
+function rankColor(i: number): string {
+  if (i === 0) return '#FACC15' // oro
+  if (i === 1) return '#94A3B8' // plata
+  if (i === 2) return '#B45309' // bronce
+  return '#9CA3AF'              // neutro (gris medio)
 }
 
 export function ProductsRanking({ rows }: { rows: ProductRankRow[] }) {
   const navigate = useNavigate()
-  const maxGmv = Math.max(...rows.map((r) => r.gmv), 1)
 
   return (
     <div className="space-y-2.5">
       {rows.map((r, i) => {
-        const widthPct = (r.gmv / maxGmv) * 100
-        const isTop = i === 0
-        const tone = rankTone(i)
+        const color = rankColor(i)
+        const isTopThree = i < 3
         return (
           <motion.button
             key={r.product.id}
@@ -34,19 +32,20 @@ export function ProductsRanking({ rows }: { rows: ProductRankRow[] }) {
             onClick={() => navigate(`/productos/${r.product.id}`)}
             className="relative w-full overflow-hidden rounded-2xl surface p-3 text-left transition-shadow hover:shadow-soft-lg sm:p-4"
           >
-            {/* Barra de progreso (color top según posición) */}
-            <div
-              className="pointer-events-none absolute inset-y-0 left-0"
-              style={{ width: `${widthPct}%`, backgroundColor: tone.barAlpha }}
-            />
-
-            <div className="relative flex items-center gap-3">
-              {/* Posición — mismo tamaño para # y corona */}
-              <div className="flex w-6 shrink-0 items-center justify-center text-base font-bold tnum">
-                {isTop ? (
-                  <Crown size={18} style={{ color: tone.bar }} />
+            <div className="flex items-center gap-3">
+              {/* Posición — top3 corona del color, resto número neutro */}
+              <div className="flex w-7 shrink-0 items-center justify-center text-base font-bold tnum">
+                {isTopThree ? (
+                  <Crown
+                    size={20}
+                    style={{
+                      color,
+                      filter: `drop-shadow(0 1px 2px ${color}66)`,
+                    }}
+                    fill={color}
+                  />
                 ) : (
-                  <span style={{ color: tone.bar }}>{i + 1}</span>
+                  <span style={{ color }}>{i + 1}</span>
                 )}
               </div>
 
@@ -66,13 +65,13 @@ export function ProductsRanking({ rows }: { rows: ProductRankRow[] }) {
                 </div>
               </div>
 
-              {/* GMV + comisión */}
+              {/* GMV + comisión (solo número, sin texto) */}
               <div className="shrink-0 text-right">
                 <div className="text-base font-bold tnum text-brand sm:text-lg">
                   {eur(r.gmv)}
                 </div>
                 <div className="text-xs font-medium tnum text-accent">
-                  {eur(r.commission)} de comisión
+                  {eur(r.commission)}
                 </div>
               </div>
             </div>

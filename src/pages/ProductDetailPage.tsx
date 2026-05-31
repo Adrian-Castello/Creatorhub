@@ -53,7 +53,7 @@ export function ProductDetailPage() {
     ? (isDark ? score.bgDark : score.bgLight)
     : isDark ? '#1F2024' : '#F3F4F6'
   const scoreFg = score
-    ? score.color
+    ? (isDark ? score.colorDark : score.color)
     : isDark ? '#6B7280' : '#9CA3AF'
 
   return (
@@ -104,32 +104,43 @@ export function ProductDetailPage() {
         />
         <StatCard label="GMV total" value={eur(totals.gmv)} icon={TrendingUp} accent="text-brand" />
         <StatCard label="Vídeos hechos" value={num(totals.videos)} icon={Film} />
-        {/* Calificación del producto (nota /10) */}
+        {/* Puntuación del producto (nota /10) */}
         <div
-          className="rounded-2xl p-5 flex flex-col gap-2"
+          className="relative overflow-hidden rounded-2xl p-5"
           style={{ backgroundColor: scoreBg }}
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: scoreFg, opacity: 0.85 }}>
+          <div className="mb-2 flex items-center justify-between">
+            <span
+              className="text-xs font-semibold uppercase tracking-wide"
+              style={{ color: scoreFg }}
+            >
               Puntuación
             </span>
-            <Award size={18} style={{ color: scoreFg }} />
+            <Award size={18} style={{ color: scoreFg, opacity: 0.6 }} />
           </div>
           {score ? (
-            <div className="mt-auto flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold tracking-tight tnum" style={{ color: scoreFg }}>
+            <div className="flex items-baseline">
+              <span
+                className="text-3xl font-extrabold tracking-tight tnum leading-none"
+                style={{ color: scoreFg }}
+              >
                 {score.score}
               </span>
-              <span className="text-lg font-semibold tnum opacity-60" style={{ color: scoreFg }}>
+              <span
+                className="ml-0.5 text-base font-bold tnum leading-none"
+                style={{ color: scoreFg, opacity: 0.5 }}
+              >
                 /10
               </span>
             </div>
           ) : (
-            <div className="mt-auto flex items-baseline justify-between">
-              <span className="text-2xl font-bold opacity-50 tnum" style={{ color: scoreFg }}>—</span>
-              <span className="text-[11px] opacity-70" style={{ color: scoreFg }}>
-                Necesita más views
+            <div>
+              <span className="text-2xl font-bold tnum" style={{ color: scoreFg, opacity: 0.5 }}>
+                —
               </span>
+              <p className="mt-1 text-[11px]" style={{ color: scoreFg, opacity: 0.6 }}>
+                Necesita más views
+              </p>
             </div>
           )}
         </div>

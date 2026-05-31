@@ -101,35 +101,37 @@ export const COLOR_LEVELS: { light: string; dark: string }[] = [
 export interface ProductScore {
   /** Nota del 1 al 10 */
   score: number
-  /** Color del texto/borde */
+  /** Color del texto en light mode */
   color: string
+  /** Color del texto en dark mode (brillante para contrastar) */
+  colorDark: string
   /** Color de fondo claro */
   bgLight: string
   /** Color de fondo oscuro */
   bgDark: string
 }
 
-const SCORE_COLORS: Array<{ color: string; bgLight: string; bgDark: string }> = [
+const SCORE_COLORS: Array<{ color: string; colorDark: string; bgLight: string; bgDark: string }> = [
   // 1: rojo profundo
-  { color: '#DC2626', bgLight: '#FEE2E2', bgDark: '#451414' },
+  { color: '#DC2626', colorDark: '#FCA5A5', bgLight: '#FEE2E2', bgDark: '#451414' },
   // 2: rojo
-  { color: '#EF4444', bgLight: '#FECACA', bgDark: '#5C1B1B' },
+  { color: '#EF4444', colorDark: '#FCA5A5', bgLight: '#FECACA', bgDark: '#5C1B1B' },
   // 3: naranja-rojo
-  { color: '#F97316', bgLight: '#FED7AA', bgDark: '#5C2E0F' },
+  { color: '#F97316', colorDark: '#FDBA74', bgLight: '#FED7AA', bgDark: '#5C2E0F' },
   // 4: naranja
-  { color: '#FB923C', bgLight: '#FFE4C4', bgDark: '#5A3A18' },
+  { color: '#FB923C', colorDark: '#FDBA74', bgLight: '#FFE4C4', bgDark: '#5A3A18' },
   // 5: ámbar
-  { color: '#F59E0B', bgLight: '#FEF3C7', bgDark: '#5C4308' },
+  { color: '#F59E0B', colorDark: '#FCD34D', bgLight: '#FEF3C7', bgDark: '#5C4308' },
   // 6: amarillo limón
-  { color: '#EAB308', bgLight: '#FEF9C3', bgDark: '#4D3D08' },
+  { color: '#EAB308', colorDark: '#FDE047', bgLight: '#FEF9C3', bgDark: '#4D3D08' },
   // 7: verde lima
-  { color: '#84CC16', bgLight: '#ECFCCB', bgDark: '#2E430C' },
+  { color: '#84CC16', colorDark: '#BEF264', bgLight: '#ECFCCB', bgDark: '#2E430C' },
   // 8: verde
-  { color: '#22C55E', bgLight: '#DCFCE7', bgDark: '#0F3D1A' },
+  { color: '#22C55E', colorDark: '#86EFAC', bgLight: '#DCFCE7', bgDark: '#0F3D1A' },
   // 9: verde fuerte
-  { color: '#16A34A', bgLight: '#BBF7D0', bgDark: '#0E3F1B' },
+  { color: '#16A34A', colorDark: '#6EE7B7', bgLight: '#BBF7D0', bgDark: '#0E3F1B' },
   // 10: diamante (azul cian premium)
-  { color: '#0E7490', bgLight: '#CFFAFE', bgDark: '#155E75' },
+  { color: '#0E7490', colorDark: '#67E8F9', bgLight: '#CFFAFE', bgDark: '#155E75' },
 ]
 
 export function productScore(
@@ -156,6 +158,7 @@ export function productScore(
   return {
     score,
     color: palette.color,
+    colorDark: palette.colorDark,
     bgLight: palette.bgLight,
     bgDark: palette.bgDark,
   }

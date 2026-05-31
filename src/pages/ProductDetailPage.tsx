@@ -11,7 +11,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { useData } from '../hooks/useData'
 import { useThemeContext } from '../hooks/themeContext'
 import { productTotals, productViews } from '../lib/calculations'
-import { productTier, STATUS_COLORS, STATUS_TINTS } from '../lib/constants'
+import { productScore, STATUS_COLORS, STATUS_TINTS } from '../lib/constants'
 import { eur, num, pct } from '../lib/format'
 
 export function ProductDetailPage() {
@@ -42,18 +42,18 @@ export function ProductDetailPage() {
 
   const totals = productTotals(product.id, sales, videos, products)
   const views = productViews(product.id, dayViews)
-  const tier = productTier(totals.gmv, views)
+  const score = productScore(totals.gmv, views)
 
   const tint = STATUS_TINTS[product.status]
   const bg = isDark ? tint.darkBg : tint.lightBg
   const statusColor = STATUS_COLORS[product.status]
 
-  // Tier visualización
-  const tierBg = tier
-    ? (isDark ? tier.tier.bg.dark : tier.tier.bg.light)
+  // Visualización de la nota
+  const scoreBg = score
+    ? (isDark ? score.bgDark : score.bgLight)
     : isDark ? '#1F2024' : '#F3F4F6'
-  const tierFg = tier
-    ? (isDark ? tier.tier.fg.dark : tier.tier.fg.light)
+  const scoreFg = score
+    ? score.color
     : isDark ? '#6B7280' : '#9CA3AF'
 
   return (
@@ -104,27 +104,30 @@ export function ProductDetailPage() {
         />
         <StatCard label="GMV total" value={eur(totals.gmv)} icon={TrendingUp} accent="text-brand" />
         <StatCard label="Vídeos hechos" value={num(totals.videos)} icon={Film} />
-        {/* Calificación del producto */}
+        {/* Calificación del producto (nota /10) */}
         <div
           className="rounded-2xl p-5 flex flex-col gap-2"
-          style={{ backgroundColor: tierBg }}
+          style={{ backgroundColor: scoreBg }}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: tierFg, opacity: 0.85 }}>
+            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: scoreFg, opacity: 0.85 }}>
               Calificación
             </span>
-            <Award size={18} style={{ color: tierFg }} />
+            <Award size={18} style={{ color: scoreFg }} />
           </div>
-          {tier ? (
-            <div className="flex items-baseline justify-between mt-auto">
-              <span className="text-3xl font-extrabold tracking-tight tnum" style={{ color: tierFg }}>
-                Tier {tier.tier.number}
+          {score ? (
+            <div className="mt-auto flex items-baseline gap-1">
+              <span className="text-4xl font-extrabold tracking-tight tnum" style={{ color: scoreFg }}>
+                {score.score}
+              </span>
+              <span className="text-lg font-semibold tnum opacity-60" style={{ color: scoreFg }}>
+                /10
               </span>
             </div>
           ) : (
-            <div className="flex items-baseline justify-between mt-auto">
-              <span className="text-2xl font-bold opacity-50 tnum" style={{ color: tierFg }}>—</span>
-              <span className="text-[11px] opacity-70" style={{ color: tierFg }}>
+            <div className="mt-auto flex items-baseline justify-between">
+              <span className="text-2xl font-bold opacity-50 tnum" style={{ color: scoreFg }}>—</span>
+              <span className="text-[11px] opacity-70" style={{ color: scoreFg }}>
                 Necesita más views
               </span>
             </div>

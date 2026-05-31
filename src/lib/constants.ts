@@ -93,69 +93,72 @@ export const COLOR_LEVELS: { light: string; dark: string }[] = [
  * El último tier usa emoji 💎 (gema), los anteriores 🏅 (medalla) con el color metálico
  * de fondo. Si el producto no tiene visualizaciones, no se muestra tier.
  */
-export interface ProductTier {
-  /** Número de tier (1 = mejor, 5 = peor) */
-  number: 1 | 2 | 3 | 4 | 5
-  /** Color del fondo de la card (claro / oscuro) */
-  bg: { light: string; dark: string }
-  /** Color del texto sobre la card */
-  fg: { light: string; dark: string }
-  /** Descripción corta para tooltips o leyenda */
-  description: string
+/**
+ * Devuelve la nota del producto del 1 al 10 según su eficiencia
+ * (GMV generado por cada 100k visualizaciones).
+ * Devuelve null si no hay visualizaciones suficientes.
+ */
+export interface ProductScore {
+  /** Nota del 1 al 10 */
+  score: number
+  /** Color del texto/borde */
+  color: string
+  /** Color de fondo claro */
+  bgLight: string
+  /** Color de fondo oscuro */
+  bgDark: string
 }
 
-// Índice del array = posición visual; el `number` real lo lleva cada tier.
-// Tier 1 (mejor) primero, Tier 5 (peor) último.
-export const PRODUCT_TIERS: ProductTier[] = [
-  {
-    number: 1,
-    bg: { light: '#CFFAFE', dark: '#155E75' },
-    fg: { light: '#0E7490', dark: '#A5F3FC' },
-    description: 'Más de 1.500 € por cada 100k visualizaciones',
-  },
-  {
-    number: 2,
-    bg: { light: '#FEF3C7', dark: '#713F12' },
-    fg: { light: '#A16207', dark: '#FDE68A' },
-    description: '700 – 1.500 € por cada 100k visualizaciones',
-  },
-  {
-    number: 3,
-    bg: { light: '#E5E7EB', dark: '#374151' },
-    fg: { light: '#4B5563', dark: '#D1D5DB' },
-    description: '300 – 700 € por cada 100k visualizaciones',
-  },
-  {
-    number: 4,
-    bg: { light: '#FFE4C4', dark: '#5A3A18' },
-    fg: { light: '#92400E', dark: '#F4C97D' },
-    description: '150 – 300 € por cada 100k visualizaciones',
-  },
-  {
-    number: 5,
-    bg: { light: '#FEE2D6', dark: '#5C2E0F' },
-    fg: { light: '#B45309', dark: '#FCD8B4' },
-    description: 'Menos de 150 € por cada 100k visualizaciones',
-  },
+const SCORE_COLORS: Array<{ color: string; bgLight: string; bgDark: string }> = [
+  // 1: rojo profundo
+  { color: '#DC2626', bgLight: '#FEE2E2', bgDark: '#451414' },
+  // 2: rojo
+  { color: '#EF4444', bgLight: '#FECACA', bgDark: '#5C1B1B' },
+  // 3: naranja-rojo
+  { color: '#F97316', bgLight: '#FED7AA', bgDark: '#5C2E0F' },
+  // 4: naranja
+  { color: '#FB923C', bgLight: '#FFE4C4', bgDark: '#5A3A18' },
+  // 5: ámbar
+  { color: '#F59E0B', bgLight: '#FEF3C7', bgDark: '#5C4308' },
+  // 6: amarillo limón
+  { color: '#EAB308', bgLight: '#FEF9C3', bgDark: '#4D3D08' },
+  // 7: verde lima
+  { color: '#84CC16', bgLight: '#ECFCCB', bgDark: '#2E430C' },
+  // 8: verde
+  { color: '#22C55E', bgLight: '#DCFCE7', bgDark: '#0F3D1A' },
+  // 9: verde fuerte
+  { color: '#16A34A', bgLight: '#BBF7D0', bgDark: '#0E3F1B' },
+  // 10: dorado premium
+  { color: '#CA8A04', bgLight: '#FEF3C7', bgDark: '#5C4308' },
 ]
 
-/**
- * Devuelve el tier del producto en base a su eficiencia.
- * Tier 1 = mejor, Tier 5 = peor.
- * Devuelve null si no hay visualizaciones suficientes para calcular.
- */
-export function productTier(
+export function productScore(
   gmv: number,
   views: number,
-): { tier: ProductTier } | null {
-  if (views < 1000) return null
+): ProductScore | null {
+  if (views < 1000) return null // necesita un mínimo de actividad
+
   const per100k = (gmv / views) * 100_000
-  let index = 4 // por defecto Tier 5 (peor)
-  if (per100k >= 1500) index = 0      // Tier 1
-  else if (per100k >= 700) index = 1  // Tier 2
-  else if (per100k >= 300) index = 2  // Tier 3
-  else if (per100k >= 150) index = 3  // Tier 4
-  return { tier: PRODUCT_TIERS[index] }
+
+  let score = 1
+  if (per100k >= 1500) score = 10
+  else if (per100k >= 900) score = 9
+  else if (per100k >= 600) score = 8
+  else if (per100k >= 400) score = 7
+  else if (per100k >= 250) score = 6
+  else if (per100k >= 150) score = 5
+  else if (per100k >= 100) score = 4
+  else if (per100k >= 60) score = 3
+  else if (per100k >= 30) score = 2
+  else score = 1
+
+  const palette = SCORE_COLORS[score - 1]
+  return {
+    score,
+    color: palette.color,
+    bgLight: palette.bgLight,
+    bgDark: palette.bgDark,
+  }
 }
 
 export const DEFAULT_VIDEO_GOAL = 5

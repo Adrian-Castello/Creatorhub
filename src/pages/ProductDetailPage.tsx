@@ -73,12 +73,17 @@ export function ProductDetailPage() {
         </div>
       </div>
 
-      <div
-        className="overflow-hidden rounded-2xl"
-        style={{ borderColor: statusColor, borderWidth: '2px', borderStyle: 'solid' }}
-      >
-        <BlurImage src={product.image_url} className="aspect-[16/9] w-full" />
-        <div className="p-5" style={{ backgroundColor: bg }}>
+      <div>
+        <div className="overflow-hidden rounded-2xl">
+          <BlurImage src={product.image_url} className="aspect-[16/9] w-full" />
+        </div>
+        <div
+          className="-mt-3 rounded-2xl p-5"
+          style={{
+            backgroundColor: bg,
+            border: `2px solid ${statusColor}`,
+          }}
+        >
           <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
           <div className="mt-2 flex items-end justify-between gap-3">
             <div className="text-sm text-muted tnum">

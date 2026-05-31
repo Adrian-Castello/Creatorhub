@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { Check } from 'lucide-react'
 import type { ProductStatus } from '../../lib/types'
 import { STATUSES, STATUS_COLORS, STATUS_LABELS, STATUS_TINTS } from '../../lib/constants'
 import { useThemeContext } from '../../hooks/themeContext'
@@ -33,41 +32,40 @@ export function StatusPicker({ value, onChange }: Props) {
             key={s}
             type="button"
             onClick={() => onChange(s)}
-            whileHover={{ scale: 1.015 }}
+            whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.98 }}
-            className="relative flex items-start gap-3 rounded-2xl border p-3.5 text-left transition-all"
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className="relative flex flex-col gap-2 rounded-2xl p-4 text-left transition-all"
             style={{
               backgroundColor: bg,
               borderColor: active ? color : 'transparent',
               borderWidth: '2px',
+              borderStyle: 'solid',
+              boxShadow: active ? `0 4px 16px -4px ${color}40` : undefined,
             }}
           >
-            {/* Punto de color */}
-            <div
-              className="mt-1 h-3 w-3 shrink-0 rounded-full shadow-sm"
-              style={{
-                backgroundColor: color,
-                boxShadow: active ? `0 0 0 4px ${color}33` : undefined,
-              }}
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-semibold">
-                  {STATUS_LABELS[s]}
-                </span>
-                {active && (
-                  <span
-                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white"
-                    style={{ backgroundColor: color }}
-                  >
-                    <Check size={12} strokeWidth={3} />
-                  </span>
-                )}
-              </div>
-              <p className="mt-0.5 text-xs text-muted leading-snug">
-                {STATUS_DESCRIPTIONS[s]}
-              </p>
+            {/* Cabecera: punto + label */}
+            <div className="flex items-center gap-2.5">
+              <span
+                className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{
+                  backgroundColor: color,
+                  boxShadow: active
+                    ? `0 0 0 4px ${color}25, 0 0 12px ${color}80`
+                    : `0 0 0 3px ${color}15`,
+                }}
+              />
+              <span
+                className="text-sm font-bold tracking-tight"
+                style={{ color: active ? color : undefined }}
+              >
+                {STATUS_LABELS[s]}
+              </span>
             </div>
+            {/* Descripción */}
+            <p className="text-xs text-muted leading-relaxed">
+              {STATUS_DESCRIPTIONS[s]}
+            </p>
           </motion.button>
         )
       })}

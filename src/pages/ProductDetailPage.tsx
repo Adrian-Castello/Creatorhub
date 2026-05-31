@@ -11,7 +11,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { useData } from '../hooks/useData'
 import { useThemeContext } from '../hooks/themeContext'
 import { productTotals, productViews } from '../lib/calculations'
-import { PRODUCT_TIERS, productTier, STATUS_COLORS, STATUS_TINTS } from '../lib/constants'
+import { productTier, STATUS_COLORS, STATUS_TINTS } from '../lib/constants'
 import { eur, num, pct } from '../lib/format'
 
 export function ProductDetailPage() {
@@ -47,7 +47,6 @@ export function ProductDetailPage() {
   const tint = STATUS_TINTS[product.status]
   const bg = isDark ? tint.darkBg : tint.lightBg
   const statusColor = STATUS_COLORS[product.status]
-  const statusFgChip = statusColor
 
   // Tier visualización
   const tierBg = tier
@@ -89,10 +88,6 @@ export function ProductDetailPage() {
             <div className="text-sm text-muted tnum">
               Comisión {pct(product.commission_pct)}
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] font-medium" style={{ color: statusFgChip }}>
-              <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
-              Toca para cambiar el estado
-            </div>
           </div>
         </div>
       </motion.button>
@@ -121,15 +116,14 @@ export function ProductDetailPage() {
             <Award size={18} style={{ color: tierFg }} />
           </div>
           {tier ? (
-            <div className="flex items-end justify-between">
-              <span className="text-3xl" aria-hidden>{tier.tier.emoji}</span>
-              <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: tierFg }}>
-                {tier.tier.label}
+            <div className="flex items-baseline justify-between mt-auto">
+              <span className="text-3xl font-extrabold tracking-tight tnum" style={{ color: tierFg }}>
+                Tier {tier.tier.number}
               </span>
             </div>
           ) : (
-            <div className="flex items-end justify-between">
-              <span className="text-3xl opacity-50" aria-hidden>—</span>
+            <div className="flex items-baseline justify-between mt-auto">
+              <span className="text-2xl font-bold opacity-50 tnum" style={{ color: tierFg }}>—</span>
               <span className="text-[11px] opacity-70" style={{ color: tierFg }}>
                 Necesita más views
               </span>

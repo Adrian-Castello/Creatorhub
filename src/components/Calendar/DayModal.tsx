@@ -106,7 +106,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
       onClose={handleClose}
       size="lg"
       title={
-        <span className="capitalize">{formatLongDate(fromKey(dayKey))}</span>
+        <span>{formatLongDate(fromKey(dayKey))}</span>
       }
       footer={
         <>

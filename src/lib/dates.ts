@@ -145,12 +145,16 @@ export function periodRange(period: Period, ref: Date, custom?: DateRange): Date
       return { from: startOfWeek(ref), to: endOfDay(endOfWeek(ref)) }
     case 'month':
       return { from: startOfMonth(ref), to: endOfDay(endOfMonth(ref)) }
+    case 'year': {
+      // Año actual: del 1 de enero al 31 de diciembre
+      const y = ref.getFullYear()
+      return {
+        from: startOfDay(new Date(y, 0, 1)),
+        to: endOfDay(new Date(y, 11, 31)),
+      }
+    }
     case 'custom':
       return custom ?? { from: startOfDay(ref), to: endOfDay(ref) }
-    case 'all':
-      // Desde 'el inicio de los tiempos' (1970) hasta hoy. Las ventas/vídeos
-      // que tengas siempre estarán dentro de este rango.
-      return { from: new Date(0), to: endOfDay(ref) }
   }
 }
 

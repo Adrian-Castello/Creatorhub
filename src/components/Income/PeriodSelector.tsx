@@ -4,8 +4,7 @@ const PERIODS: { value: Period; label: string }[] = [
   { value: 'day', label: 'Día' },
   { value: 'week', label: 'Semana' },
   { value: 'month', label: 'Mes' },
-  { value: 'all', label: 'Histórico' },
-  { value: 'custom', label: 'Personalizado' },
+  { value: 'year', label: 'Anual' },
 ]
 
 interface Props {
@@ -20,6 +19,7 @@ export function PeriodSelector({ period, onPeriod, compare, onCompare }: Props) 
     period === 'day' ? 'Comparar con el día anterior'
     : period === 'week' ? 'Comparar con la semana anterior'
     : period === 'month' ? 'Comparar con el mes anterior'
+    : period === 'year' ? 'Comparar con el año anterior'
     : 'Comparar con el período anterior' // custom
 
   return (
@@ -40,7 +40,19 @@ export function PeriodSelector({ period, onPeriod, compare, onCompare }: Props) 
         ))}
       </div>
 
-      {period !== 'all' && (
+      {/* Personalizar — separado, con estética diferenciada */}
+      <button
+        onClick={() => onPeriod('custom')}
+        className={`rounded-xl px-3.5 py-2 text-sm font-medium transition-all ${
+          period === 'custom'
+            ? 'bg-brand text-white shadow-sm'
+            : 'surface text-sub dark:text-d-sub hover:border-brand/40 hover:text-ink dark:hover:text-d-ink'
+        }`}
+      >
+        Personalizar
+      </button>
+
+      {period !== 'custom' && (
         <label className="flex cursor-pointer items-center gap-2 text-sm">
           <button
             onClick={() => onCompare(!compare)}

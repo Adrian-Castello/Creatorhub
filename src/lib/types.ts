@@ -54,7 +54,7 @@ export interface AppSettings {
 }
 
 export type Granularity = 'day' | 'week' | 'month'
-export type Period = 'day' | 'week' | 'month' | 'custom'
+export type Period = 'day' | 'week' | 'month' | 'custom' | 'all'
 
 export interface DateRange {
   from: Date

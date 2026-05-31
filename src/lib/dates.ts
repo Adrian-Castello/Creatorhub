@@ -147,6 +147,10 @@ export function periodRange(period: Period, ref: Date, custom?: DateRange): Date
       return { from: startOfMonth(ref), to: endOfDay(endOfMonth(ref)) }
     case 'custom':
       return custom ?? { from: startOfDay(ref), to: endOfDay(ref) }
+    case 'all':
+      // Desde 'el inicio de los tiempos' (1970) hasta hoy. Las ventas/vídeos
+      // que tengas siempre estarán dentro de este rango.
+      return { from: new Date(0), to: endOfDay(ref) }
   }
 }
 

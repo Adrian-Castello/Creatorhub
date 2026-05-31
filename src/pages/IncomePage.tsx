@@ -26,7 +26,8 @@ export function IncomePage() {
 
   const current = rangeTotals(sales, videos, products, range)
   const prevRange = useMemo(() => previousPeriod(range), [range])
-  const previous = compare ? rangeTotals(sales, videos, products, prevRange) : null
+  const compareActive = compare && period !== 'all'
+  const previous = compareActive ? rangeTotals(sales, videos, products, prevRange) : null
 
   const ranking = useMemo(
     () => productRanking(sales, products, range),

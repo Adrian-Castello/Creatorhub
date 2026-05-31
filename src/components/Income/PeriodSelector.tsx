@@ -5,6 +5,7 @@ const PERIODS: { value: Period; label: string }[] = [
   { value: 'week', label: 'Semana' },
   { value: 'month', label: 'Mes' },
   { value: 'custom', label: 'Personalizado' },
+  { value: 'all', label: 'Todo' },
 ]
 
 interface Props {
@@ -33,23 +34,25 @@ export function PeriodSelector({ period, onPeriod, compare, onCompare }: Props) 
         ))}
       </div>
 
-      <label className="flex cursor-pointer items-center gap-2 text-sm">
-        <button
-          onClick={() => onCompare(!compare)}
-          role="switch"
-          aria-checked={compare}
-          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-            compare ? 'bg-brand' : 'bg-black/15 dark:bg-white/15'
-          }`}
-        >
-          <span
-            className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-              compare ? 'translate-x-5' : 'translate-x-0'
+      {period !== 'all' && (
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <button
+            onClick={() => onCompare(!compare)}
+            role="switch"
+            aria-checked={compare}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+              compare ? 'bg-brand' : 'bg-black/15 dark:bg-white/15'
             }`}
-          />
-        </button>
-        <span className="text-muted">Comparar con período anterior</span>
-      </label>
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                compare ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+          <span className="text-muted">Comparar con período anterior</span>
+        </label>
+      )}
     </div>
   )
 }

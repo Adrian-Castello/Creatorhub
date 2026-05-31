@@ -81,6 +81,92 @@ export const COLOR_LEVELS: { light: string; dark: string }[] = [
   { light: '#FCD34D', dark: '#CA8A04' }, // 6 — premium / día increíble (amarillo dorado vibrante)
 ]
 
+/**
+ * Niveles de calificación de un producto según su eficiencia
+ * GMV generado por cada 100k visualizaciones.
+ *  - 0:  Cobre    (< 150 €)
+ *  - 1:  Bronce   (150 – 300 €)
+ *  - 2:  Plata    (300 – 700 €)
+ *  - 3:  Oro      (700 – 1.500 €)
+ *  - 4:  Diamante (> 1.500 €)
+ *
+ * El último tier usa emoji 💎 (gema), los anteriores 🏅 (medalla) con el color metálico
+ * de fondo. Si el producto no tiene visualizaciones, no se muestra tier.
+ */
+export interface ProductTier {
+  key: 'cobre' | 'bronce' | 'plata' | 'oro' | 'diamante'
+  label: string
+  emoji: string
+  /** Color del fondo de la pill (claro / oscuro) */
+  bg: { light: string; dark: string }
+  /** Color del icono/texto sobre la pill */
+  fg: { light: string; dark: string }
+  /** Descripción corta para tooltips o leyenda */
+  description: string
+}
+
+export const PRODUCT_TIERS: ProductTier[] = [
+  {
+    key: 'cobre',
+    label: 'Cobre',
+    emoji: '🏅',
+    bg: { light: '#FEE2D6', dark: '#5C2E0F' },
+    fg: { light: '#B45309', dark: '#FCD8B4' },
+    description: 'Menos de 150 € por cada 100k visualizaciones',
+  },
+  {
+    key: 'bronce',
+    label: 'Bronce',
+    emoji: '🏅',
+    bg: { light: '#FFE4C4', dark: '#5A3A18' },
+    fg: { light: '#92400E', dark: '#F4C97D' },
+    description: '150 – 300 € por cada 100k visualizaciones',
+  },
+  {
+    key: 'plata',
+    label: 'Plata',
+    emoji: '🏅',
+    bg: { light: '#E5E7EB', dark: '#374151' },
+    fg: { light: '#4B5563', dark: '#D1D5DB' },
+    description: '300 – 700 € por cada 100k visualizaciones',
+  },
+  {
+    key: 'oro',
+    label: 'Oro',
+    emoji: '🏅',
+    bg: { light: '#FEF3C7', dark: '#713F12' },
+    fg: { light: '#A16207', dark: '#FDE68A' },
+    description: '700 – 1.500 € por cada 100k visualizaciones',
+  },
+  {
+    key: 'diamante',
+    label: 'Diamante',
+    emoji: '💎',
+    bg: { light: '#CFFAFE', dark: '#155E75' },
+    fg: { light: '#0E7490', dark: '#A5F3FC' },
+    description: 'Más de 1.500 € por cada 100k visualizaciones',
+  },
+]
+
+/**
+ * Devuelve el índice del tier (0–4) del producto en base a su eficiencia.
+ * Devuelve null si no hay visualizaciones suficientes para calcular.
+ */
+export function productTier(
+  gmv: number,
+  views: number,
+): { index: number; tier: ProductTier } | null {
+  if (views < 1000) return null // necesita un mínimo de actividad
+  const per100k = (gmv / views) * 100_000
+  let index = 0
+  if (per100k >= 1500) index = 4
+  else if (per100k >= 700) index = 3
+  else if (per100k >= 300) index = 2
+  else if (per100k >= 150) index = 1
+  else index = 0
+  return { index, tier: PRODUCT_TIERS[index] }
+}
+
 export const DEFAULT_VIDEO_GOAL = 5
 export const THEME_KEY = 'creatorhub-theme'
 export const IMAGE_BUCKET = 'product-images'

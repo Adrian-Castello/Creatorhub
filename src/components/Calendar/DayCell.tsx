@@ -101,29 +101,11 @@ export function DayCell({
         {date.getDate()}
       </span>
 
-      {/* Modo PUBLICACIONES: vídeos arriba, vistas abajo */}
-      {mode === 'publicaciones' && (
-        <>
-          {totals.videos > 0 && (
-            <span className={`mt-0.5 hidden text-[10px] tnum sm:block ${subColor}`}>
-              {totals.videos}/{goal} 🎬
-            </span>
-          )}
-          {dayTotalViews > 0 && (
-            <span
-              className={`mt-auto flex items-center gap-1 text-[10px] font-medium tnum ${
-                textOnTint
-                  ? isDark
-                    ? 'text-white/85'
-                    : 'text-black/65'
-                  : 'text-muted'
-              }`}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-              {numCompact(dayTotalViews)}
-            </span>
-          )}
-        </>
+      {/* Modo PUBLICACIONES: solo número de vídeos arriba */}
+      {mode === 'publicaciones' && totals.videos > 0 && (
+        <span className={`mt-0.5 hidden text-[10px] tnum sm:block ${subColor}`}>
+          {totals.videos}/{goal} 🎬
+        </span>
       )}
 
       {/* Modo MONETIZACIÓN: vistas en medio (pequeño), GMV abajo (destacado) */}

@@ -1,51 +1,78 @@
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Crown } from 'lucide-react'
 import type { ProductRankRow } from '../../lib/calculations'
 import { BlurImage } from '../ui/BlurImage'
 import { eur, num, pct } from '../../lib/format'
 
 export function ProductsRanking({ rows }: { rows: ProductRankRow[] }) {
   const navigate = useNavigate()
+  const maxGmv = Math.max(...rows.map((r) => r.gmv), 1)
 
   return (
-    <div className="surface overflow-hidden rounded-2xl">
-      <div className="hidden grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b hairline px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted sm:grid">
-        <span>Producto</span>
-        <span className="w-16 text-right">Uds</span>
-        <span className="w-24 text-right">GMV</span>
-        <span className="w-24 text-right">Comisión</span>
-        <span className="w-16 text-right">% total</span>
-      </div>
-
-      <div className="divide-y hairline">
-        {rows.map((r, i) => (
-          <button
+    <div className="space-y-2.5">
+      {rows.map((r, i) => {
+        const widthPct = (r.gmv / maxGmv) * 100
+        const isTop = i === 0
+        return (
+          <motion.button
             key={r.product.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.03 }}
+            whileHover={{ x: 2 }}
             onClick={() => navigate(`/productos/${r.product.id}`)}
-            className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02] sm:grid-cols-[1fr_auto_auto_auto_auto] sm:gap-4"
+            className="relative w-full overflow-hidden rounded-2xl surface p-3 text-left transition-shadow hover:shadow-soft-lg sm:p-4"
           >
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="hidden w-4 text-sm font-semibold text-muted tnum sm:block">
-                {i + 1}
-              </span>
-              <BlurImage src={r.product.image_url} className="h-9 w-9 shrink-0 rounded-lg" />
-              <span className="truncate text-sm font-medium">{r.product.name}</span>
-            </div>
+            {/* Barra de progreso GMV de fondo */}
+            <div
+              className="pointer-events-none absolute inset-y-0 left-0 bg-brand/[0.06] dark:bg-brand/[0.10]"
+              style={{ width: `${widthPct}%` }}
+            />
 
-            <div className="hidden w-16 text-right text-sm tnum sm:block">
-              {num(r.units)}
+            <div className="relative flex items-center gap-3">
+              {/* Posición */}
+              <div className="flex shrink-0 flex-col items-center justify-center">
+                {isTop ? (
+                  <Crown size={20} className="text-st-testeando drop-shadow" />
+                ) : (
+                  <span className="text-base font-bold tnum text-muted">
+                    {i + 1}
+                  </span>
+                )}
+              </div>
+
+              {/* Imagen */}
+              <BlurImage
+                src={r.product.image_url}
+                className="h-12 w-12 shrink-0 rounded-xl sm:h-14 sm:w-14"
+              />
+
+              {/* Nombre y % del total */}
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold sm:text-base">
+                  {r.product.name}
+                </div>
+                <div className="mt-0.5 flex items-center gap-2 text-xs text-muted tnum">
+                  <span>{num(r.units)} uds</span>
+                  <span className="opacity-40">·</span>
+                  <span>{pct(r.pctOfTotal)} del total</span>
+                </div>
+              </div>
+
+              {/* GMV + comisión */}
+              <div className="shrink-0 text-right">
+                <div className="text-base font-bold tnum text-brand sm:text-lg">
+                  {eur(r.gmv)}
+                </div>
+                <div className="text-xs font-medium tnum text-accent">
+                  {eur(r.commission)} de comisión
+                </div>
+              </div>
             </div>
-            <div className="text-right text-sm font-semibold tnum sm:w-24">
-              {eur(r.gmv)}
-            </div>
-            <div className="hidden w-24 text-right text-sm tnum text-accent sm:block">
-              {eur(r.commission)}
-            </div>
-            <div className="hidden w-16 text-right text-sm tnum text-muted sm:block">
-              {pct(r.pctOfTotal)}
-            </div>
-          </button>
-        ))}
-      </div>
+          </motion.button>
+        )
+      })}
     </div>
   )
 }

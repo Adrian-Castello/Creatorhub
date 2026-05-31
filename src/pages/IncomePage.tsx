@@ -2,23 +2,12 @@ import { useMemo, useState } from 'react'
 import { BarChart3 } from 'lucide-react'
 import { PeriodSelector } from '../components/Income/PeriodSelector'
 import { IncomeKpis } from '../components/Income/IncomeKpis'
-import { IncomeChart } from '../components/Income/IncomeChart'
 import { ProductsRanking } from '../components/Income/ProductsRanking'
 import { DateRangePicker } from '../components/ui/DateRangePicker'
 import { EmptyState } from '../components/ui/EmptyState'
 import { useData } from '../hooks/useData'
-import {
-  aggregateByPeriod,
-  previousPeriod,
-  productRanking,
-  rangeTotals,
-} from '../lib/calculations'
-import {
-  endOfDay,
-  granularityForPeriod,
-  periodRange,
-  startOfDay,
-} from '../lib/dates'
+import { previousPeriod, productRanking, rangeTotals } from '../lib/calculations'
+import { endOfDay, periodRange, startOfDay } from '../lib/dates'
 import type { DateRange, Period } from '../lib/types'
 
 export function IncomePage() {
@@ -34,26 +23,10 @@ export function IncomePage() {
     () => periodRange(period, new Date(), custom),
     [period, custom],
   )
-  const granularity = useMemo(
-    () => granularityForPeriod(period, range),
-    [period, range],
-  )
 
   const current = rangeTotals(sales, videos, products, range)
   const prevRange = useMemo(() => previousPeriod(range), [range])
   const previous = compare ? rangeTotals(sales, videos, products, prevRange) : null
-
-  const chartData = useMemo(
-    () => aggregateByPeriod(sales, videos, products, range, granularity),
-    [sales, videos, products, range, granularity],
-  )
-  const prevChartData = useMemo(
-    () =>
-      compare
-        ? aggregateByPeriod(sales, videos, products, prevRange, granularity)
-        : null,
-    [compare, sales, videos, products, prevRange, granularity],
-  )
 
   const ranking = useMemo(
     () => productRanking(sales, products, range),
@@ -88,17 +61,14 @@ export function IncomePage() {
       <IncomeKpis current={current} previous={previous} />
 
       {hasData ? (
-        <>
-          <IncomeChart data={chartData} previous={prevChartData} />
-          {ranking.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-                Ranking de productos
-              </h2>
-              <ProductsRanking rows={ranking} />
-            </section>
-          )}
-        </>
+        ranking.length > 0 && (
+          <section>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+              Ranking de productos
+            </h2>
+            <ProductsRanking rows={ranking} />
+          </section>
+        )
       ) : (
         <EmptyState
           icon={<BarChart3 size={22} />}

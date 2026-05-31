@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Coins, Eye, Film, Package, Pencil, ShoppingBag, TrendingUp, Trash2 } from 'lucide-react'
+import { ArrowLeft, Award, Coins, Eye, Film, Package, Pencil, ShoppingBag, TrendingUp, Trash2 } from 'lucide-react'
 import { ProductForm } from '../components/Products/ProductForm'
 import { StatusPicker } from '../components/Products/StatusPicker'
 import { BlurImage } from '../components/ui/BlurImage'
@@ -10,7 +10,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { useData } from '../hooks/useData'
 import { useThemeContext } from '../hooks/themeContext'
 import { productTotals, productViews } from '../lib/calculations'
-import { STATUS_COLORS, STATUS_LABELS, STATUS_TINTS } from '../lib/constants'
+import { PRODUCT_TIERS, productTier, STATUS_COLORS, STATUS_LABELS, STATUS_TINTS } from '../lib/constants'
 import { eur, num, pct } from '../lib/format'
 
 export function ProductDetailPage() {
@@ -41,10 +41,21 @@ export function ProductDetailPage() {
 
   const totals = productTotals(product.id, sales, videos, products)
   const views = productViews(product.id, dayViews)
+  const tier = productTier(totals.gmv, views)
 
   const tint = STATUS_TINTS[product.status]
   const bg = isDark ? tint.darkBg : tint.lightBg
   const statusColor = STATUS_COLORS[product.status]
+  const statusBgChip = isDark ? `${statusColor}33` : `${statusColor}1A` // 20%/10% alpha hex
+  const statusFgChip = statusColor
+
+  // Tier visualización
+  const tierBg = tier
+    ? (isDark ? tier.tier.bg.dark : tier.tier.bg.light)
+    : isDark ? '#1F2024' : '#F3F4F6'
+  const tierFg = tier
+    ? (isDark ? tier.tier.fg.dark : tier.tier.fg.light)
+    : isDark ? '#6B7280' : '#9CA3AF'
 
   return (
     <div className="space-y-6">
@@ -68,52 +79,62 @@ export function ProductDetailPage() {
       >
         <BlurImage src={product.image_url} className="aspect-[16/9] w-full" />
         <div className="p-5" style={{ backgroundColor: bg }}>
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="min-w-0 flex-1 text-2xl font-bold tracking-tight">
-              {product.name}
-            </h1>
+          <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
+          <div className="mt-2 flex items-end justify-between gap-3">
+            <div className="text-sm text-muted tnum">
+              Comisión {pct(product.commission_pct)}
+            </div>
             <button
               onClick={() => setStatusOpen(true)}
               title="Cambiar estado"
-              className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-all hover:scale-105"
-              style={{ backgroundColor: statusColor, color: 'white' }}
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all hover:scale-105"
+              style={{ backgroundColor: statusBgChip, color: statusFgChip }}
             >
+              <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
               {STATUS_LABELS[product.status]}
             </button>
-          </div>
-          <div className="mt-2 text-sm text-muted tnum">
-            Comisión {pct(product.commission_pct)}
           </div>
         </div>
       </div>
 
-      {/* 3 secciones grandes: Ventas, Views, Comisión */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <BigStat label="Ventas" value={num(totals.units)} icon={ShoppingBag} />
-        <BigStat label="Views" value={num(views)} icon={Eye} />
-        <BigStat
+      {/* 6 KPIs en rejilla simétrica 2×3 */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <StatCard label="Ventas" value={num(totals.units)} icon={ShoppingBag} />
+        <StatCard label="Views" value={num(views)} icon={Eye} />
+        <StatCard
           label="Comisión"
           value={eur(totals.commission)}
           icon={Coins}
           accent="text-accent"
         />
-      </div>
-
-      {/* KPIs secundarios */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="surface rounded-2xl p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted">GMV total</span>
-            <TrendingUp size={16} className="text-muted" />
+        <StatCard label="GMV total" value={eur(totals.gmv)} icon={TrendingUp} accent="text-brand" />
+        <StatCard label="Vídeos hechos" value={num(totals.videos)} icon={Film} />
+        {/* Calificación del producto */}
+        <div
+          className="rounded-2xl p-5 flex flex-col gap-2"
+          style={{ backgroundColor: tierBg }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: tierFg, opacity: 0.85 }}>
+              Calificación
+            </span>
+            <Award size={18} style={{ color: tierFg }} />
           </div>
-          <div className="text-2xl font-bold tnum text-brand">{eur(totals.gmv)}</div>
-        </div>
-        <div className="surface rounded-2xl p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted">Vídeos hechos</span>
-            <Film size={16} className="text-muted" />
-          </div>
-          <div className="text-2xl font-bold tnum">{num(totals.videos)}</div>
+          {tier ? (
+            <div className="flex items-end justify-between">
+              <span className="text-3xl" aria-hidden>{tier.tier.emoji}</span>
+              <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: tierFg }}>
+                {tier.tier.label}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-end justify-between">
+              <span className="text-3xl opacity-50" aria-hidden>—</span>
+              <span className="text-[11px] opacity-70" style={{ color: tierFg }}>
+                Necesita más views
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -122,8 +143,8 @@ export function ProductDetailPage() {
       <Modal
         open={statusOpen}
         onClose={() => setStatusOpen(false)}
-        title="Cambiar estado"
-        size="sm"
+        title="Cambiar estado del producto"
+        size="md"
       >
         <StatusPicker
           value={product.status}
@@ -165,7 +186,7 @@ export function ProductDetailPage() {
   )
 }
 
-function BigStat({
+function StatCard({
   label,
   value,
   icon: Icon,
@@ -184,7 +205,7 @@ function BigStat({
         </span>
         <Icon size={18} className="text-muted" />
       </div>
-      <div className={`text-3xl font-bold tnum ${accent ?? ''}`}>{value}</div>
+      <div className={`text-2xl font-bold tnum ${accent ?? ''}`}>{value}</div>
     </div>
   )
 }

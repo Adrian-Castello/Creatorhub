@@ -3,7 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Check, ImagePlus, Receipt } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { ProductPickerModal } from '../ui/ProductPickerModal'
+import { VideoTypeModal } from './VideoTypeModal'
 import { useData } from '../../hooks/useData'
+import type { VideoType } from '../../lib/types'
 
 interface Props {
   dayKey: string
@@ -14,6 +16,8 @@ export function DayQuickActions({ dayKey, onOpenDay }: Props) {
   const { products, videos, settings, setVideo, removeVideo } = useData()
   const goal = settings.daily_video_goal
   const [pickerSlot, setPickerSlot] = useState<number | null>(null)
+  // Tras elegir producto, abrir selector de tipo (video/carrusel) con esto pendiente
+  const [pendingPick, setPendingPick] = useState<{ slot: number; productId: string | null } | null>(null)
 
   const dayVideos = useMemo(
     () => videos.filter((v) => v.day_date === dayKey),
@@ -39,7 +43,7 @@ export function DayQuickActions({ dayKey, onOpenDay }: Props) {
     <div className="surface rounded-2xl p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-          Vídeos del día
+          Publicaciones del día
         </h2>
         <Button size="sm" variant="secondary" onClick={onOpenDay}>
           <Receipt size={15} /> Registrar datos
@@ -76,7 +80,11 @@ export function DayQuickActions({ dayKey, onOpenDay }: Props) {
                   )}
                 </AnimatePresence>
               </button>
-              <span className="flex-1 text-sm font-medium">Vídeo {slot}</span>
+              <span className="flex-1 text-sm font-medium">
+                {checked && video?.product_id && video.type === 'carrusel'
+                  ? `Carrusel ${slot}`
+                  : `Vídeo ${slot}`}
+              </span>
               {checked && (
                 <button
                   onClick={() => setPickerSlot(slot)}
@@ -106,9 +114,31 @@ export function DayQuickActions({ dayKey, onOpenDay }: Props) {
         products={products.filter((p) => p.status !== 'descartado')}
         value={pickerVideo?.product_id ?? null}
         onPick={(pid) => {
-          if (pickerSlot !== null) setVideo(dayKey, pickerSlot, pid)
+          if (pickerSlot !== null) {
+            // Si ya tenía producto y tipo, sólo cambiamos producto (mantenemos type)
+            if (pickerVideo?.product_id && pickerVideo.type) {
+              setVideo(dayKey, pickerSlot, pid, pickerVideo.type)
+              setPickerSlot(null)
+            } else {
+              // Slot vacío o sin tipo: preguntar tipo
+              setPendingPick({ slot: pickerSlot, productId: pid })
+              setPickerSlot(null)
+            }
+          }
         }}
-        title={pickerSlot !== null ? `Producto para vídeo ${pickerSlot}` : 'Elige un producto'}
+        title={pickerSlot !== null ? `Producto para publicación ${pickerSlot}` : 'Elige un producto'}
+      />
+
+      <VideoTypeModal
+        open={pendingPick !== null}
+        onClose={() => setPendingPick(null)}
+        current={pickerVideo?.type}
+        onPick={(type: VideoType) => {
+          if (pendingPick) {
+            setVideo(dayKey, pendingPick.slot, pendingPick.productId, type)
+          }
+          setPendingPick(null)
+        }}
       />
     </div>
   )

@@ -15,11 +15,14 @@ export interface Product {
   created_at: string
 }
 
+export type VideoType = 'video' | 'carrusel'
+
 export interface Video {
   id: string
   day_date: string // YYYY-MM-DD
   slot: number
   product_id: string | null
+  type: VideoType
   created_at: string
 }
 

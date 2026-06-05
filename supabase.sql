@@ -29,6 +29,7 @@ create table if not exists public.videos (
   day_date    date not null,
   slot        int not null,
   product_id  uuid references public.products(id) on delete set null,
+  type        text not null default 'video' check (type in ('video','carrusel')),
   created_at  timestamptz not null default now(),
   unique (day_date, slot)
 );

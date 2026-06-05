@@ -40,7 +40,7 @@ for (let d = 0; d < 40; d++) {
   const count = [5, 4, 5, 3, 5, 2, 0, 4, 5, 5, 1, 3, 5, 4][d % 14]
   const pool = ['p1', 'p2', 'p3', 'p4', 'p6']
   for (let s = 1; s <= count; s++) {
-    videos.push({ id: 'v' + vid++, day_date: key, slot: s, product_id: pool[(d + s) % pool.length], created_at: key })
+    videos.push({ id: 'v' + vid++, day_date: key, slot: s, product_id: pool[(d + s) % pool.length], type: (d + s) % 5 === 0 ? 'carrusel' : 'video', created_at: key })
   }
 }
 export const demoVideos = videos

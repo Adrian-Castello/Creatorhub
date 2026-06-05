@@ -103,7 +103,7 @@ export function ProductDetailPage() {
           accent="text-accent"
         />
         <StatCard label="GMV total" value={eur(totals.gmv)} icon={TrendingUp} accent="text-brand" />
-        <StatCard label="Vídeos hechos" value={num(totals.videos)} icon={Film} />
+        <StatCard label="Publicaciones hechas" value={num(totals.videos)} icon={Film} />
         {/* Puntuación del producto (nota /10) */}
         <div
           className="relative overflow-hidden rounded-2xl p-5"

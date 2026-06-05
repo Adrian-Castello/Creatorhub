@@ -26,7 +26,7 @@ export function DayKpis({ dayKey }: Props) {
 
   const cards = [
     {
-      label: 'Vídeos',
+      label: 'Publicaciones',
       value: `${totals.videos} / ${goal}`,
       icon: CheckCircle2,
       progress,

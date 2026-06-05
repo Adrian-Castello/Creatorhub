@@ -5,6 +5,7 @@ import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { ProductPickerModal } from '../ui/ProductPickerModal'
 import { ImportFromScreenshotModal } from '../ui/ImportFromScreenshotModal'
+import { VideoTypeModal } from '../Home/VideoTypeModal'
 import { Confetti } from '../ui/Confetti'
 import { useData } from '../../hooks/useData'
 import { fromKey, formatLongDate } from '../../lib/dates'
@@ -40,6 +41,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
   const [salePickerOpen, setSalePickerOpen] = useState(false)
   const [viewsPickerOpen, setViewsPickerOpen] = useState(false)
   const [videoPickerSlot, setVideoPickerSlot] = useState<number | null>(null)
+  const [videoTypePending, setVideoTypePending] = useState<{ slot: number; productId: string | null } | null>(null)
   const [importOpen, setImportOpen] = useState(false)
   const prevCompleted = useRef(0)
 
@@ -123,7 +125,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
-              Vídeos
+              Publicaciones
             </h3>
             <motion.span
               animate={goalReached ? { scale: [1, 1.15, 1] } : {}}
@@ -167,7 +169,11 @@ export function DayModal({ open, dayKey, onClose }: Props) {
                       )}
                     </AnimatePresence>
                   </button>
-                  <span className="flex-1 text-sm font-medium">Vídeo {slot}</span>
+                  <span className="flex-1 text-sm font-medium">
+                    {checked && video?.product_id && video.type === 'carrusel'
+                      ? `Carrusel ${slot}`
+                      : `Vídeo ${slot}`}
+                  </span>
                   {checked && (
                     <button
                       onClick={() => setVideoPickerSlot(slot)}
@@ -350,9 +356,36 @@ export function DayModal({ open, dayKey, onClose }: Props) {
             : null
         }
         onPick={(pid) => {
-          if (videoPickerSlot !== null && dayKey) setVideo(dayKey, videoPickerSlot, pid)
+          if (videoPickerSlot !== null && dayKey) {
+            const existing = dayVideos.find((v) => v.slot === videoPickerSlot)
+            if (existing?.product_id && existing.type) {
+              // Ya tenía producto y tipo: solo cambiar producto
+              setVideo(dayKey, videoPickerSlot, pid, existing.type)
+              setVideoPickerSlot(null)
+            } else {
+              // Slot vacío: preguntar tipo
+              setVideoTypePending({ slot: videoPickerSlot, productId: pid })
+              setVideoPickerSlot(null)
+            }
+          }
         }}
-        title={videoPickerSlot !== null ? `Producto para vídeo ${videoPickerSlot}` : 'Elige un producto'}
+        title={videoPickerSlot !== null ? `Producto para publicación ${videoPickerSlot}` : 'Elige un producto'}
+      />
+
+      <VideoTypeModal
+        open={videoTypePending !== null}
+        onClose={() => setVideoTypePending(null)}
+        current={
+          videoTypePending
+            ? dayVideos.find((v) => v.slot === videoTypePending.slot)?.type
+            : undefined
+        }
+        onPick={(type) => {
+          if (videoTypePending && dayKey) {
+            setVideo(dayKey, videoTypePending.slot, videoTypePending.productId, type)
+          }
+          setVideoTypePending(null)
+        }}
       />
 
       <ProductPickerModal

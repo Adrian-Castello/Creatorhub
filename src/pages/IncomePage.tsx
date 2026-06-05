@@ -43,11 +43,27 @@ export function IncomePage() {
     () => extrasInRange.reduce((a, x) => a + x.amount, 0),
     [extrasInRange],
   )
+  // Solo los bonus se cuentan como ingreso real (los cupones son crédito interno)
+  const bonusTotal = useMemo(
+    () => extrasInRange.filter((x) => x.kind === 'bonus').reduce((a, x) => a + x.amount, 0),
+    [extrasInRange],
+  )
 
   const prevExtrasTotal = useMemo(() => {
     if (!previous) return 0
     return extraIncome
       .filter((x) => {
+        const d = fromKey(x.day_date)
+        return d >= prevRange.from && d <= prevRange.to
+      })
+      .reduce((a, x) => a + x.amount, 0)
+  }, [extraIncome, prevRange, previous])
+
+  const prevBonusTotal = useMemo(() => {
+    if (!previous) return 0
+    return extraIncome
+      .filter((x) => {
+        if (x.kind !== 'bonus') return false
         const d = fromKey(x.day_date)
         return d >= prevRange.from && d <= prevRange.to
       })
@@ -88,8 +104,8 @@ export function IncomePage() {
       <IncomeKpis
         current={current}
         previous={previous}
-        extrasTotal={extrasTotal}
-        prevExtrasTotal={prevExtrasTotal}
+        bonusTotal={bonusTotal}
+        prevBonusTotal={prevBonusTotal}
       />
 
       {hasData ? (

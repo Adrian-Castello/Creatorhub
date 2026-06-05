@@ -68,17 +68,25 @@ export function ExtraIncomeSection({ range }: Props) {
             Sin ingresos extra en este período.
           </div>
         ) : (
-          <ul className="divide-y hairline">
-            <AnimatePresence initial={false}>
-              {items.map((x) => (
-                <ExtraIncomeRow
-                  key={x.id}
-                  item={x}
-                  onDelete={() => deleteExtraIncome(x.id)}
-                />
-              ))}
-            </AnimatePresence>
-          </ul>
+          <>
+            <ul className="divide-y hairline">
+              <AnimatePresence initial={false}>
+                {items.map((x) => (
+                  <ExtraIncomeRow
+                    key={x.id}
+                    item={x}
+                    onDelete={() => deleteExtraIncome(x.id)}
+                  />
+                ))}
+              </AnimatePresence>
+            </ul>
+            {totalCupon > 0 && (
+              <p className="mt-3 border-t hairline pt-3 text-[11px] text-muted leading-snug">
+                Los cupones son crédito de TikTok Shop y no se suman a tus ingresos totales,
+                ya que solo pueden gastarse dentro de la plataforma.
+              </p>
+            )}
+          </>
         )}
       </div>
 

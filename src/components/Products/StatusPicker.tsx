@@ -11,7 +11,7 @@ interface Props {
 const STATUS_DESCRIPTIONS: Record<ProductStatus, string> = {
   solicitado: 'Acabo de pedirlo, todavía no me ha llegado',
   recibido: 'Ya está en mi poder, pendiente de empezar a probarlo',
-  testeando: 'Estoy haciendo vídeos y midiendo cómo responde',
+  testeando: 'Estoy haciendo publicaciones y midiendo cómo responde',
   activo: 'Funciona bien, sigue generando ventas',
   descartado: 'No funcionó como esperaba, dejo de promocionarlo',
 }

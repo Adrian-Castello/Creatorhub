@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { FlaskConical, Layers, Package, Plus } from 'lucide-react'
 import { ProductGrid } from '../components/Products/ProductGrid'
@@ -24,7 +24,21 @@ const FILTER_OPTIONS: { value: Filter; label: string; color?: string }[] = [
 
 export function ProductsPage() {
   const { products, sales, videos, loading } = useData()
-  const [filter, setFilter] = useState<Filter>('todos')
+  const [filter, setFilter] = useState<Filter>(() => {
+    if (typeof window === 'undefined') return 'todos'
+    const saved = window.sessionStorage.getItem('products:filter')
+    if (saved && FILTER_OPTIONS.some((o) => o.value === saved)) {
+      return saved as Filter
+    }
+    return 'todos'
+  })
+
+  // Persistir el filtro entre navegaciones (vuelta desde detalle)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('products:filter', filter)
+    }
+  }, [filter])
   const [formOpen, setFormOpen] = useState(false)
 
   // Métricas
@@ -110,7 +124,7 @@ export function ProductsPage() {
           title="No hay productos"
           description={
             products.length === 0
-              ? 'Crea tu primer producto para empezar a trackear vídeos y ventas.'
+              ? 'Crea tu primer producto para empezar a trackear publicaciones y ventas.'
               : 'Ningún producto coincide con este filtro.'
           }
         />

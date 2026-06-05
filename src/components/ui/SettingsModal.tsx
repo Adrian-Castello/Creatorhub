@@ -87,7 +87,7 @@ export function SettingsModal({ open, onClose }: Props) {
         />
 
         <Input
-          label="Objetivo diario de vídeos"
+          label="Objetivo diario de publicaciones"
           type="number"
           min={1}
           max={20}

@@ -17,6 +17,7 @@ import type {
   ProductStatus,
   Sale,
   Video,
+  VideoType,
 } from '../lib/types'
 import type { ExtraIncome, ExtraIncomeKind } from '../lib/types'
 
@@ -38,7 +39,12 @@ interface DataState {
   deleteProduct: (id: string) => Promise<void>
 
   // Videos
-  setVideo: (dayKey: string, slot: number, productId: string | null) => Promise<void>
+  setVideo: (
+    dayKey: string,
+    slot: number,
+    productId: string | null,
+    type?: VideoType,
+  ) => Promise<void>
   removeVideo: (dayKey: string, slot: number) => Promise<void>
 
   // Sales
@@ -214,14 +220,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // ---- Videos ----
   const setVideo = useCallback<DataState['setVideo']>(
-    async (dayKey, slot, productId) => {
+    async (dayKey, slot, productId, type) => {
       const existing = videos.find((v) => v.day_date === dayKey && v.slot === slot)
+      const finalType: VideoType = type ?? existing?.type ?? 'video'
       const prev = videos
       // optimistic
       if (existing) {
         setVideos((cur) =>
           cur.map((v) =>
-            v.id === existing.id ? { ...v, product_id: productId } : v,
+            v.id === existing.id ? { ...v, product_id: productId, type: finalType } : v,
           ),
         )
       } else {
@@ -230,6 +237,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           day_date: dayKey,
           slot,
           product_id: productId,
+          type: finalType,
           created_at: new Date().toISOString(),
         }
         setVideos((cur) => [...cur, temp])
@@ -238,7 +246,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const { data, error } = await supabase
           .from('videos')
           .upsert(
-            { day_date: dayKey, slot, product_id: productId },
+            { day_date: dayKey, slot, product_id: productId, type: finalType },
             { onConflict: 'day_date,slot' },
           )
           .select()
@@ -253,7 +261,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         })
       } catch (e: any) {
         setVideos(prev)
-        push('Error al guardar vídeo: ' + (e.message ?? ''), 'error')
+        push('Error al guardar publicación: ' + (e.message ?? ''), 'error')
       }
     },
     [videos, push],
@@ -272,7 +280,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (error) throw error
       } catch (e: any) {
         setVideos(prev)
-        push('Error al eliminar vídeo: ' + (e.message ?? ''), 'error')
+        push('Error al eliminar publicación: ' + (e.message ?? ''), 'error')
       }
     },
     [videos, push],

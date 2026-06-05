@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode, useEffect, useId } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 
@@ -18,30 +18,62 @@ const maxW: Record<NonNullable<Props['size']>, string> = {
   lg: 'sm:max-w-3xl',
 }
 
-// Contador global de modales abiertos — el body solo se desbloquea cuando llega a 0.
-// Antes manipulábamos body.style.overflow directamente, lo que provocaba que al cerrar
-// un modal hijo (ej. picker dentro de DayModal) se "desbloqueara" todo, dejando overlays
-// fantasma o, peor, dejando el body con overflow:hidden permanente y la app inutilizable.
-let openCount = 0
+// Set global de IDs de modales abiertos. Más robusto que un contador:
+// los IDs son únicos y un cleanup que no se ejecuta no deja basura permanente
+// porque el siguiente render del mismo modal vuelve a poner su mismo id.
+// Si el set queda vacío, el body se desbloquea.
+const openModalIds = new Set<string>()
+
+function syncBodyLock() {
+  if (openModalIds.size > 0) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
+}
+
+// Mecanismo extra de seguridad: si el usuario vuelve a la pestaña o
+// recarga, garantizamos que el body queda libre.
+if (typeof window !== 'undefined') {
+  window.addEventListener('pageshow', () => {
+    openModalIds.clear()
+    document.body.style.overflow = ''
+  })
+}
 
 export function Modal({ open, onClose, title, children, size = 'md', footer }: Props) {
+  const id = useId()
+
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      // Si pasamos a cerrado, asegurarnos de quitar este id del set
+      // por si alguna iteración previa lo había añadido sin cleanup.
+      if (openModalIds.delete(id)) {
+        syncBodyLock()
+      }
+      return
+    }
     const handler = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', handler)
-    openCount += 1
-    document.body.style.overflow = 'hidden'
+    openModalIds.add(id)
+    syncBodyLock()
     return () => {
       document.removeEventListener('keydown', handler)
-      openCount = Math.max(0, openCount - 1)
-      if (openCount === 0) {
-        document.body.style.overflow = ''
-      }
+      openModalIds.delete(id)
+      syncBodyLock()
     }
-  }, [open, onClose])
+  }, [open, onClose, id])
 
   return (
-    <AnimatePresence>
+    <AnimatePresence
+      onExitComplete={() => {
+        // Defensa final: una vez que la animación de salida termine,
+        // si este modal ya no está abierto, su id no debería estar.
+        if (!open && openModalIds.delete(id)) {
+          syncBodyLock()
+        }
+      }}
+    >
       {open && (
         <motion.div
           className="fixed inset-0 z-50 flex sm:items-center sm:justify-center sm:p-4"

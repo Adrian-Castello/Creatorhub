@@ -141,7 +141,7 @@ export function CalendarPage() {
 
       {/* KPIs: del mes por defecto, del día si hay uno seleccionado */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiTile label="Vídeos" value={num(showing.videos)} />
+        <KpiTile label="Publicaciones" value={num(showing.videos)} />
         <KpiTile label="Visualizaciones" value={num(showing.views)} />
         <KpiTile label="GMV" value={eur(showing.gmv)} accent="text-brand" />
         <KpiTile label="Comisión" value={eur(showing.commission)} accent="text-accent" />

@@ -7,25 +7,27 @@ import { eur, num, signedPct } from '../../lib/format'
 interface Props {
   current: RangeTotals
   previous: RangeTotals | null
-  extrasTotal: number
-  prevExtrasTotal: number
+  /** Solo los bonus (premios en metálico) se suman a "Ingresos totales".
+   *  Los cupones se quedan fuera porque no son retirables. */
+  bonusTotal: number
+  prevBonusTotal: number
 }
 
-export function IncomeKpis({ current, previous, extrasTotal, prevExtrasTotal }: Props) {
-  // "Ingresos totales" = comisión productos + cupones + bonus
-  const totalIncome = current.commission + extrasTotal
-  const prevTotalIncome = previous ? previous.commission + prevExtrasTotal : 0
+export function IncomeKpis({ current, previous, bonusTotal, prevBonusTotal }: Props) {
+  // "Ingresos totales" = comisión productos + bonus (cupones excluidos)
+  const totalIncome = current.commission + bonusTotal
+  const prevTotalIncome = previous ? previous.commission + prevBonusTotal : 0
 
   const items = [
     { label: 'GMV total', value: eur(current.gmv), cur: current.gmv, prev: previous?.gmv, accent: 'text-brand', isCurrency: true },
     { label: 'Ingresos totales', value: eur(totalIncome), cur: totalIncome, prev: previous ? prevTotalIncome : undefined, accent: 'text-accent', isCurrency: true },
     { label: 'Unidades vendidas', value: num(current.units), cur: current.units, prev: previous?.units, isCurrency: false },
-    { label: 'Vídeos subidos', value: num(current.videos), cur: current.videos, prev: previous?.videos, isCurrency: false },
+    { label: 'Publicaciones subidas', value: num(current.videos), cur: current.videos, prev: previous?.videos, isCurrency: false },
   ]
 
   // ¿Hay datos en el período anterior? (si todo está a 0, lo consideramos vacío)
   const hasPrevData = previous
-    ? previous.gmv > 0 || previous.commission > 0 || previous.units > 0 || previous.videos > 0 || prevExtrasTotal > 0
+    ? previous.gmv > 0 || previous.commission > 0 || previous.units > 0 || previous.videos > 0 || prevBonusTotal > 0
     : false
 
   return (

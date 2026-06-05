@@ -78,6 +78,22 @@ create index if not exists idx_day_views_day_date   on public.day_views (day_dat
 create index if not exists idx_day_views_product_id on public.day_views (product_id);
 
 -- -------------------------------------------------------------
+-- Tabla: extra_income
+-- Ingresos fuera de comisiones de venta (cupones de TikTok, bonus
+-- por competiciones, etc).
+-- -------------------------------------------------------------
+create table if not exists public.extra_income (
+  id          uuid primary key default gen_random_uuid(),
+  day_date    date not null,
+  kind        text not null check (kind in ('cupon','bonus')),
+  amount      numeric(10,2) not null default 0,
+  description text not null default '',
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists idx_extra_income_day_date on public.extra_income (day_date);
+
+-- -------------------------------------------------------------
 -- Tabla: app_settings (singleton, id = 1)
 -- -------------------------------------------------------------
 create table if not exists public.app_settings (
@@ -106,6 +122,7 @@ alter table public.videos       enable row level security;
 alter table public.sales        enable row level security;
 alter table public.day_notes    enable row level security;
 alter table public.day_views    enable row level security;
+alter table public.extra_income enable row level security;
 alter table public.app_settings enable row level security;
 
 -- products
@@ -126,6 +143,10 @@ create policy "anon_all_day_notes" on public.day_notes
 
 -- day_views
 create policy "anon_all_day_views" on public.day_views
+  for all to anon using (true) with check (true);
+
+-- extra_income
+create policy "anon_all_extra_income" on public.extra_income
   for all to anon using (true) with check (true);
 
 -- app_settings

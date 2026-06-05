@@ -3,15 +3,16 @@ import { BarChart3 } from 'lucide-react'
 import { PeriodSelector } from '../components/Income/PeriodSelector'
 import { IncomeKpis } from '../components/Income/IncomeKpis'
 import { ProductsRanking } from '../components/Income/ProductsRanking'
+import { ExtraIncomeSection } from '../components/Income/ExtraIncomeSection'
 import { DateRangePicker } from '../components/ui/DateRangePicker'
 import { EmptyState } from '../components/ui/EmptyState'
 import { useData } from '../hooks/useData'
 import { previousPeriod, productRanking, rangeTotals } from '../lib/calculations'
-import { endOfDay, periodRange, startOfDay } from '../lib/dates'
+import { endOfDay, fromKey, periodRange, startOfDay } from '../lib/dates'
 import type { DateRange, Period } from '../lib/types'
 
 export function IncomePage() {
-  const { sales, videos, products } = useData()
+  const { sales, videos, products, extraIncome } = useData()
   const [period, setPeriod] = useState<Period>('month')
   const [compare, setCompare] = useState(false)
   const [custom, setCustom] = useState<DateRange>(() => {
@@ -24,17 +25,42 @@ export function IncomePage() {
     [period, custom],
   )
 
+  // Totales de comisión / GMV / etc (de productos)
   const current = rangeTotals(sales, videos, products, range)
   const prevRange = useMemo(() => previousPeriod(range), [range])
-  const compareActive = compare
-  const previous = compareActive ? rangeTotals(sales, videos, products, prevRange) : null
+  const previous = compare ? rangeTotals(sales, videos, products, prevRange) : null
+
+  // Extras del período (cupones + bonus)
+  const extrasInRange = useMemo(
+    () =>
+      extraIncome.filter((x) => {
+        const d = fromKey(x.day_date)
+        return d >= range.from && d <= range.to
+      }),
+    [extraIncome, range],
+  )
+  const extrasTotal = useMemo(
+    () => extrasInRange.reduce((a, x) => a + x.amount, 0),
+    [extrasInRange],
+  )
+
+  const prevExtrasTotal = useMemo(() => {
+    if (!previous) return 0
+    return extraIncome
+      .filter((x) => {
+        const d = fromKey(x.day_date)
+        return d >= prevRange.from && d <= prevRange.to
+      })
+      .reduce((a, x) => a + x.amount, 0)
+  }, [extraIncome, prevRange, previous])
 
   const ranking = useMemo(
     () => productRanking(sales, products, range),
     [sales, products, range],
   )
 
-  const hasData = current.gmv > 0 || current.units > 0 || current.videos > 0
+  const hasData =
+    current.gmv > 0 || current.units > 0 || current.videos > 0 || extrasTotal > 0
 
   return (
     <div className="space-y-6">
@@ -59,23 +85,35 @@ export function IncomePage() {
         )}
       </div>
 
-      <IncomeKpis current={current} previous={previous} />
+      <IncomeKpis
+        current={current}
+        previous={previous}
+        extrasTotal={extrasTotal}
+        prevExtrasTotal={prevExtrasTotal}
+      />
 
       {hasData ? (
-        ranking.length > 0 && (
-          <section>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-              Ranking de productos
-            </h2>
-            <ProductsRanking rows={ranking} />
-          </section>
-        )
+        <>
+          {ranking.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+                Ranking de productos
+              </h2>
+              <ProductsRanking rows={ranking} />
+            </section>
+          )}
+
+          <ExtraIncomeSection range={range} />
+        </>
       ) : (
-        <EmptyState
-          icon={<BarChart3 size={22} />}
-          title="Aún no hay ventas en este período 📊"
-          description="Registra ventas desde el calendario o desde Inicio para ver tu analítica aquí."
-        />
+        <>
+          <EmptyState
+            icon={<BarChart3 size={22} />}
+            title="Aún no hay ventas en este período 📊"
+            description="Registra ventas desde el calendario o desde Inicio para ver tu analítica aquí."
+          />
+          <ExtraIncomeSection range={range} />
+        </>
       )}
     </div>
   )

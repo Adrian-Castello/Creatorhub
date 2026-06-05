@@ -18,15 +18,25 @@ const maxW: Record<NonNullable<Props['size']>, string> = {
   lg: 'sm:max-w-3xl',
 }
 
+// Contador global de modales abiertos — el body solo se desbloquea cuando llega a 0.
+// Antes manipulábamos body.style.overflow directamente, lo que provocaba que al cerrar
+// un modal hijo (ej. picker dentro de DayModal) se "desbloqueara" todo, dejando overlays
+// fantasma o, peor, dejando el body con overflow:hidden permanente y la app inutilizable.
+let openCount = 0
+
 export function Modal({ open, onClose, title, children, size = 'md', footer }: Props) {
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', handler)
+    openCount += 1
     document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', handler)
-      document.body.style.overflow = ''
+      openCount = Math.max(0, openCount - 1)
+      if (openCount === 0) {
+        document.body.style.overflow = ''
+      }
     }
   }, [open, onClose])
 

@@ -18,6 +18,7 @@ import type {
   Sale,
   Video,
 } from '../lib/types'
+import type { ExtraIncome, ExtraIncomeKind } from '../lib/types'
 
 interface DataState {
   products: Product[]
@@ -25,6 +26,7 @@ interface DataState {
   sales: Sale[]
   notes: Record<string, DayNote>
   dayViews: DayView[]
+  extraIncome: ExtraIncome[]
   settings: AppSettings
   loading: boolean
   configured: boolean
@@ -57,6 +59,13 @@ interface DataState {
 
   // Settings
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
+
+  // Extra income (cupones, bonus)
+  createExtraIncome: (
+    input: { day_date: string; kind: ExtraIncomeKind; amount: number; description: string },
+  ) => Promise<void>
+  updateExtraIncome: (id: string, patch: Partial<Omit<ExtraIncome, 'id' | 'created_at'>>) => Promise<void>
+  deleteExtraIncome: (id: string) => Promise<void>
 }
 
 const Ctx = createContext<DataState | null>(null)
@@ -75,6 +84,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [sales, setSales] = useState<Sale[]>([])
   const [notes, setNotes] = useState<Record<string, DayNote>>({})
   const [dayViews, setDayViews] = useState<DayView[]>([])
+  const [extraIncome, setExtraIncome] = useState<ExtraIncome[]>([])
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [loading, setLoading] = useState(true)
 
@@ -87,6 +97,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setSales(demo.demoSales)
       setNotes(demo.demoNotes)
       setDayViews(demo.demoDayViews ?? [])
+      setExtraIncome(demo.demoExtraIncome ?? [])
       setSettings(demo.demoSettings)
       setLoading(false)
       return
@@ -97,19 +108,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true)
     try {
-      const [p, v, s, n, dv, st] = await Promise.all([
+      const [p, v, s, n, dv, ei, st] = await Promise.all([
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('videos').select('*'),
         supabase.from('sales').select('*'),
         supabase.from('day_notes').select('*'),
         supabase.from('day_views').select('*'),
+        supabase.from('extra_income').select('*'),
         supabase.from('app_settings').select('*').eq('id', 1).maybeSingle(),
       ])
       if (p.error) throw p.error
       if (v.error) throw v.error
       if (s.error) throw s.error
       if (n.error) throw n.error
-      // dv puede fallar si el usuario aún no ha ejecutado la migración v4:
+      // dv y ei pueden fallar si el usuario aún no ha ejecutado las migraciones:
       // lo manejamos suavemente.
       setProducts((p.data as Product[]) ?? [])
       setVideos((v.data as Video[]) ?? [])
@@ -118,11 +130,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
       ;((n.data as DayNote[]) ?? []).forEach((row) => (noteMap[row.day_date] = row))
       setNotes(noteMap)
       if (dv.error) {
-        // Probablemente migración v4 no aplicada; avisamos una sola vez.
         console.warn('day_views no disponible — ejecuta supabase-migration-v4.sql')
         setDayViews([])
       } else {
         setDayViews((dv.data as DayView[]) ?? [])
+      }
+      if (ei.error) {
+        console.warn('extra_income no disponible — ejecuta supabase-migration-v5.sql')
+        setExtraIncome([])
+      } else {
+        setExtraIncome((ei.data as ExtraIncome[]) ?? [])
       }
       if (st.data) setSettings(st.data as AppSettings)
     } catch (e: any) {
@@ -427,6 +444,62 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [settings, push],
   )
 
+  // ---- Extra income (cupones, bonus) ----
+  const createExtraIncome = useCallback<DataState['createExtraIncome']>(
+    async (input) => {
+      try {
+        const { data, error } = await supabase
+          .from('extra_income')
+          .insert({
+            day_date: input.day_date,
+            kind: input.kind,
+            amount: input.amount,
+            description: input.description ?? '',
+          })
+          .select()
+          .single()
+        if (error) throw error
+        setExtraIncome((cur) => [...cur, data as ExtraIncome])
+      } catch (e: any) {
+        push('Error al guardar: ' + (e.message ?? ''), 'error')
+      }
+    },
+    [push],
+  )
+
+  const updateExtraIncome = useCallback<DataState['updateExtraIncome']>(
+    async (id, patch) => {
+      const prev = extraIncome
+      setExtraIncome((cur) => cur.map((x) => (x.id === id ? { ...x, ...patch } : x)))
+      try {
+        const { error } = await supabase
+          .from('extra_income')
+          .update(patch)
+          .eq('id', id)
+        if (error) throw error
+      } catch (e: any) {
+        setExtraIncome(prev)
+        push('Error al actualizar: ' + (e.message ?? ''), 'error')
+      }
+    },
+    [extraIncome, push],
+  )
+
+  const deleteExtraIncome = useCallback<DataState['deleteExtraIncome']>(
+    async (id) => {
+      const prev = extraIncome
+      setExtraIncome((cur) => cur.filter((x) => x.id !== id))
+      try {
+        const { error } = await supabase.from('extra_income').delete().eq('id', id)
+        if (error) throw error
+      } catch (e: any) {
+        setExtraIncome(prev)
+        push('Error al eliminar: ' + (e.message ?? ''), 'error')
+      }
+    },
+    [extraIncome, push],
+  )
+
   return (
     <Ctx.Provider
       value={{
@@ -435,6 +508,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         sales,
         notes,
         dayViews,
+        extraIncome,
         settings,
         loading,
         configured: supabaseConfigured || import.meta.env.VITE_DEMO === '1',
@@ -450,6 +524,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         deleteDayView,
         saveNote,
         updateSettings,
+        createExtraIncome,
+        updateExtraIncome,
+        deleteExtraIncome,
       }}
     >
       {children}

@@ -46,6 +46,17 @@ export interface DayView {
   created_at: string
 }
 
+export type ExtraIncomeKind = 'cupon' | 'bonus'
+
+export interface ExtraIncome {
+  id: string
+  day_date: string // YYYY-MM-DD
+  kind: ExtraIncomeKind
+  amount: number
+  description: string
+  created_at: string
+}
+
 export interface AppSettings {
   id: number
   daily_video_goal: number

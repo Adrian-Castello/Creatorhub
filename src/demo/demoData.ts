@@ -1,4 +1,4 @@
-import type { AppSettings, DayNote, DayView, Product, Sale, Video } from '../lib/types'
+import type { AppSettings, DayNote, DayView, ExtraIncome, Product, Sale, Video } from '../lib/types'
 import { toKey } from '../lib/dates'
 
 // Demo seed used ONLY when VITE_DEMO=1 (for screenshots / previews).
@@ -75,6 +75,12 @@ export const demoDayViews: DayView[] = [
   { id: 'dv5', day_date: daysAgo(1), product_id: 'p3', views: 12400, created_at: daysAgo(1) },  // Lámpara
   // Antesdeayer
   { id: 'dv6', day_date: daysAgo(2), product_id: 'p2', views: 45200, created_at: daysAgo(2) },
+]
+
+export const demoExtraIncome: ExtraIncome[] = [
+  { id: 'ei1', day_date: daysAgo(0), kind: 'cupon', amount: 25, description: 'Cupón Creator Boost', created_at: daysAgo(0) },
+  { id: 'ei2', day_date: daysAgo(2), kind: 'bonus', amount: 30, description: 'Top 50 reto semanal', created_at: daysAgo(2) },
+  { id: 'ei3', day_date: daysAgo(5), kind: 'bonus', amount: 50, description: 'Top 10 reto mensual', created_at: daysAgo(5) },
 ]
 
 export const demoSettings: AppSettings = { id: 1, daily_video_goal: 5, user_name: 'Adrián', updated_at: new Date().toISOString() }

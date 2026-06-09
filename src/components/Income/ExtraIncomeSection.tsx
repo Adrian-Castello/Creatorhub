@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Gift, Plus, Trash2, Trophy } from 'lucide-react'
+import { ChevronDown, Gift, Plus, Trash2, Trophy } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
@@ -17,6 +17,7 @@ const KIND_META: Record<
   ExtraIncomeKind,
   {
     label: string
+    labelSingular: string
     icon: typeof Gift
     color: string
     gradient: string
@@ -25,13 +26,15 @@ const KIND_META: Record<
 > = {
   cupon: {
     label: 'Cupones',
+    labelSingular: 'Cupón',
     icon: Gift,
     color: '#8B5CF6',
     gradient: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
-    sublabel: 'Crédito de TikTok Shop',
+    sublabel: 'Crédito en tienda',
   },
   bonus: {
     label: 'Bonus',
+    labelSingular: 'Bonus',
     icon: Trophy,
     color: '#EAB308',
     gradient: 'linear-gradient(135deg, #FACC15 0%, #EAB308 100%)',
@@ -42,6 +45,7 @@ const KIND_META: Record<
 export function ExtraIncomeSection({ range }: Props) {
   const { extraIncome, createExtraIncome, deleteExtraIncome } = useData()
   const [open, setOpen] = useState(false)
+  const [expanded, setExpanded] = useState<ExtraIncomeKind | null>(null)
 
   const items = useMemo(() => {
     return extraIncome
@@ -52,10 +56,14 @@ export function ExtraIncomeSection({ range }: Props) {
       .sort((a, b) => (a.day_date < b.day_date ? 1 : -1))
   }, [extraIncome, range])
 
-  const totalCupon = items.filter((x) => x.kind === 'cupon').reduce((a, x) => a + x.amount, 0)
-  const totalBonus = items.filter((x) => x.kind === 'bonus').reduce((a, x) => a + x.amount, 0)
-  const cuponCount = items.filter((x) => x.kind === 'cupon').length
-  const bonusCount = items.filter((x) => x.kind === 'bonus').length
+  const cuponItems = items.filter((x) => x.kind === 'cupon')
+  const bonusItems = items.filter((x) => x.kind === 'bonus')
+  const totalCupon = cuponItems.reduce((a, x) => a + x.amount, 0)
+  const totalBonus = bonusItems.reduce((a, x) => a + x.amount, 0)
+
+  function toggle(kind: ExtraIncomeKind) {
+    setExpanded((cur) => (cur === kind ? null : kind))
+  }
 
   return (
     <section>
@@ -68,33 +76,43 @@ export function ExtraIncomeSection({ range }: Props) {
         </Button>
       </div>
 
-      {/* Hero: dos cards grandes con gradient */}
+      {/* Hero: dos cards */}
       <div className="grid grid-cols-2 gap-3">
-        <HeroCard kind="cupon" total={totalCupon} count={cuponCount} />
-        <HeroCard kind="bonus" total={totalBonus} count={bonusCount} />
+        <HeroCard
+          kind="cupon"
+          total={totalCupon}
+          items={cuponItems}
+          expanded={expanded === 'cupon'}
+          onToggle={() => toggle('cupon')}
+        />
+        <HeroCard
+          kind="bonus"
+          total={totalBonus}
+          items={bonusItems}
+          expanded={expanded === 'bonus'}
+          onToggle={() => toggle('bonus')}
+        />
       </div>
 
-      {/* Lista compacta abajo */}
-      {items.length > 0 && (
-        <div className="mt-3 surface rounded-2xl">
-          <ul className="divide-y hairline">
-            <AnimatePresence initial={false}>
-              {items.map((x) => (
-                <ExtraIncomeRow
-                  key={x.id}
-                  item={x}
-                  onDelete={() => deleteExtraIncome(x.id)}
-                />
-              ))}
-            </AnimatePresence>
-          </ul>
-          {totalCupon > 0 && (
-            <p className="border-t hairline px-4 py-2.5 text-[11px] text-muted leading-snug">
-              Los cupones no se suman a tus ingresos totales, ya que solo pueden gastarse dentro de TikTok Shop.
-            </p>
-          )}
-        </div>
-      )}
+      {/* Lista — solo cuando alguna sección está expandida */}
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key={expanded}
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <ExpandedList
+              items={expanded === 'cupon' ? cuponItems : bonusItems}
+              kind={expanded}
+              onDelete={(id) => deleteExtraIncome(id)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ExtraIncomeFormModal
         open={open}
@@ -111,36 +129,39 @@ export function ExtraIncomeSection({ range }: Props) {
 function HeroCard({
   kind,
   total,
-  count,
+  items,
+  expanded,
+  onToggle,
 }: {
   kind: ExtraIncomeKind
   total: number
-  count: number
+  items: ExtraIncome[]
+  expanded: boolean
+  onToggle: () => void
 }) {
   const meta = KIND_META[kind]
   const Icon = meta.icon
-  const empty = count === 0
+  const empty = items.length === 0
+  const count = items.length
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-2xl p-4 sm:p-5"
+    <motion.button
+      whileHover={{ y: empty ? 0 : -2 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={empty ? undefined : onToggle}
+      disabled={empty}
+      className="group relative overflow-hidden rounded-2xl p-4 text-left sm:p-5"
       style={{
-        background: empty ? undefined : meta.gradient,
+        background: empty
+          ? `linear-gradient(135deg, ${meta.color}0F 0%, ${meta.color}05 100%)`
+          : meta.gradient,
         boxShadow: empty ? undefined : `0 8px 24px -8px ${meta.color}50`,
+        // borde uniforme — sin pseudo-elementos que generaban el "pico gris"
+        border: empty ? `1px dashed ${meta.color}55` : 'none',
+        cursor: empty ? 'default' : 'pointer',
       }}
     >
-      {empty && (
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(135deg, ${meta.color}10 0%, ${meta.color}05 100%)`,
-            border: `1px dashed ${meta.color}40`,
-            borderRadius: '1rem',
-          }}
-        />
-      )}
-
+      {/* Brillos sólo cuando hay datos (con gradient activo) */}
       {!empty && (
         <>
           <div
@@ -163,15 +184,14 @@ function HeroCard({
         >
           <Icon size={20} className={empty ? '' : 'text-white'} strokeWidth={2.2} />
         </div>
-        {count > 0 && (
-          <span
-            className={`text-[10px] font-bold uppercase tracking-wider ${
-              empty ? '' : 'text-white/80'
-            }`}
-            style={empty ? { color: meta.color } : undefined}
+        {!empty && (
+          <motion.span
+            animate={{ rotate: expanded ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm text-white"
           >
-            {count} {count === 1 ? 'reg' : 'regs'}
-          </span>
+            <ChevronDown size={15} strokeWidth={2.5} />
+          </motion.span>
         )}
       </div>
 
@@ -195,16 +215,76 @@ function HeroCard({
         <div
           className={`mt-0.5 text-[11px] ${empty ? 'text-muted' : 'text-white/75'}`}
         >
-          {meta.sublabel}
+          {empty
+            ? meta.sublabel
+            : `${count} ${count === 1 ? meta.labelSingular.toLowerCase() : meta.label.toLowerCase()}`}
         </div>
       </div>
-    </motion.div>
+    </motion.button>
   )
 }
 
-function ExtraIncomeRow({ item, onDelete }: { item: ExtraIncome; onDelete: () => void }) {
-  const meta = KIND_META[item.kind]
-  const Icon = meta.icon
+function ExpandedList({
+  items,
+  kind,
+  onDelete,
+}: {
+  items: ExtraIncome[]
+  kind: ExtraIncomeKind
+  onDelete: (id: string) => void
+}) {
+  const meta = KIND_META[kind]
+
+  if (items.length === 0) return null
+
+  return (
+    <div
+      className="overflow-hidden rounded-2xl"
+      style={{
+        backgroundColor: `${meta.color}08`,
+        border: `1px solid ${meta.color}25`,
+      }}
+    >
+      <ul>
+        <AnimatePresence initial={false}>
+          {items.map((x, i) => (
+            <ExtraIncomeRow
+              key={x.id}
+              item={x}
+              meta={meta}
+              onDelete={() => onDelete(x.id)}
+              isLast={i === items.length - 1}
+            />
+          ))}
+        </AnimatePresence>
+      </ul>
+      {kind === 'cupon' && (
+        <p
+          className="px-4 py-2.5 text-[11px] leading-snug"
+          style={{
+            color: meta.color,
+            opacity: 0.7,
+            borderTop: `1px solid ${meta.color}20`,
+          }}
+        >
+          Los cupones no se suman a tus ingresos totales, ya que solo pueden gastarse dentro de TikTok Shop.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function ExtraIncomeRow({
+  item,
+  meta,
+  onDelete,
+  isLast,
+}: {
+  item: ExtraIncome
+  meta: typeof KIND_META[ExtraIncomeKind]
+  onDelete: () => void
+  isLast: boolean
+}) {
   return (
     <motion.li
       layout
@@ -212,26 +292,18 @@ function ExtraIncomeRow({ item, onDelete }: { item: ExtraIncome; onDelete: () =>
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, x: -10 }}
       className="flex items-center gap-3 px-4 py-3"
+      style={isLast ? undefined : { borderBottom: `1px solid ${meta.color}15` }}
     >
-      <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-        style={{ backgroundColor: `${meta.color}1A`, color: meta.color }}
-      >
-        <Icon size={15} />
-      </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold">{item.kind === 'cupon' ? 'Cupón' : 'Bonus'}</span>
-          <span className="text-xs text-muted tnum">
-            {formatShort(item.day_date)}
+          <span className="text-sm font-semibold">
+            {item.description || meta.labelSingular}
           </span>
         </div>
-        {item.description && (
-          <div className="truncate text-xs text-muted">{item.description}</div>
-        )}
+        <div className="text-xs text-muted tnum">{formatShort(item.day_date)}</div>
       </div>
       <div className="shrink-0 text-right">
-        <div className="text-sm font-bold tnum" style={{ color: meta.color }}>
+        <div className="text-base font-bold tnum" style={{ color: meta.color }}>
           {eur(item.amount)}
         </div>
       </div>
@@ -334,7 +406,7 @@ function ExtraIncomeFormModal({
                     className="text-sm font-bold"
                     style={{ color: active ? meta.color : undefined }}
                   >
-                    {k === 'cupon' ? 'Cupón' : 'Bonus'}
+                    {meta.labelSingular}
                   </span>
                 </motion.button>
               )

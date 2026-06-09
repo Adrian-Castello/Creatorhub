@@ -15,12 +15,12 @@ type Filter = 'todos' | ProductStatus
 
 const FILTER_OPTIONS: { value: Filter; label: string; color?: string }[] = [
   { value: 'todos', label: 'Todos' },
+  { value: 'carruseles', label: 'Carruseles', color: STATUS_COLORS.carruseles },
   { value: 'solicitado', label: 'Solicitados', color: STATUS_COLORS.solicitado },
   { value: 'recibido', label: 'Recibidos', color: STATUS_COLORS.recibido },
-  { value: 'testeando', label: 'Testeando', color: STATUS_COLORS.testeando },
-  { value: 'activo', label: 'Activos', color: STATUS_COLORS.activo },
   { value: 'muestra', label: 'Muestras', color: STATUS_COLORS.muestra },
-  { value: 'carruseles', label: 'Carruseles', color: STATUS_COLORS.carruseles },
+  { value: 'testeando', label: 'Testeados', color: STATUS_COLORS.testeando },
+  { value: 'activo', label: 'Activos', color: STATUS_COLORS.activo },
   { value: 'descartado', label: 'Descartados', color: STATUS_COLORS.descartado },
 ]
 

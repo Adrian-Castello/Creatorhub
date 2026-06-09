@@ -4,12 +4,12 @@ export const APP_NAME = 'Creatorhub'
 export const APP_VERSION = '1.0.0'
 
 export const STATUSES: ProductStatus[] = [
+  'carruseles',
   'solicitado',
   'recibido',
+  'muestra',
   'testeando',
   'activo',
-  'muestra',
-  'carruseles',
   'descartado',
 ]
 

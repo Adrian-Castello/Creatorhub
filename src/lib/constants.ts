@@ -8,6 +8,8 @@ export const STATUSES: ProductStatus[] = [
   'recibido',
   'testeando',
   'activo',
+  'muestra',
+  'carruseles',
   'descartado',
 ]
 
@@ -16,6 +18,8 @@ export const STATUS_LABELS: Record<ProductStatus, string> = {
   recibido: 'Recibido',
   testeando: 'Testeando',
   activo: 'Activo',
+  muestra: 'Muestra',
+  carruseles: 'Carruseles',
   descartado: 'Descartado',
 }
 
@@ -25,6 +29,8 @@ export const STATUS_COLORS: Record<ProductStatus, string> = {
   recibido: '#3B82F6',   // azul — ya llegó, pendiente de probar
   testeando: '#F59E0B',  // ámbar — probando
   activo: '#10B981',     // verde — funciona
+  muestra: '#EC4899',    // rosa — sample de TikTok, hay que subir contenido
+  carruseles: '#06B6D4', // cian — solo para carruseles, no lo tengo físicamente
   descartado: '#EF4444', // rojo — no funcionó
 }
 
@@ -60,6 +66,18 @@ export const STATUS_TINTS: Record<
     darkBg: '#0F2620',
     lightBorder: '#D1FAE5',
     darkBorder: '#163A2F',
+  },
+  muestra: {
+    lightBg: '#FDF2F8',  // rosa muy claro
+    darkBg: '#2A1422',
+    lightBorder: '#FCE7F3',
+    darkBorder: '#3D1C30',
+  },
+  carruseles: {
+    lightBg: '#ECFEFF',  // cian muy claro
+    darkBg: '#0F2A2E',
+    lightBorder: '#CFFAFE',
+    darkBorder: '#164048',
   },
   descartado: {
     lightBg: '#FEF2F2',  // rojo muy claro

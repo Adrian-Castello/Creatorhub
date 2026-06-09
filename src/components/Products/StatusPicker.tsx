@@ -13,6 +13,8 @@ const STATUS_DESCRIPTIONS: Record<ProductStatus, string> = {
   recibido: 'Ya está en mi poder, pendiente de empezar a probarlo',
   testeando: 'Estoy haciendo publicaciones y midiendo cómo responde',
   activo: 'Funciona bien, sigue generando ventas',
+  muestra: 'Sample de TikTok, debo subir contenido',
+  carruseles: 'No lo tengo, solo lo subo en carruseles',
   descartado: 'No funcionó como esperaba, dejo de promocionarlo',
 }
 

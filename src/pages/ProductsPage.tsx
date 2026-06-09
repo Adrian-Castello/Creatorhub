@@ -19,6 +19,8 @@ const FILTER_OPTIONS: { value: Filter; label: string; color?: string }[] = [
   { value: 'recibido', label: 'Recibidos', color: STATUS_COLORS.recibido },
   { value: 'testeando', label: 'Testeando', color: STATUS_COLORS.testeando },
   { value: 'activo', label: 'Activos', color: STATUS_COLORS.activo },
+  { value: 'muestra', label: 'Muestras', color: STATUS_COLORS.muestra },
+  { value: 'carruseles', label: 'Carruseles', color: STATUS_COLORS.carruseles },
   { value: 'descartado', label: 'Descartados', color: STATUS_COLORS.descartado },
 ]
 

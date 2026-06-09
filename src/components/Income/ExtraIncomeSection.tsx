@@ -13,16 +13,36 @@ interface Props {
   range: DateRange
 }
 
-const KIND_META: Record<ExtraIncomeKind, { label: string; icon: typeof Gift; color: string }> = {
-  cupon: { label: 'Cupón',  icon: Gift,   color: '#8B5CF6' }, // violeta (créditos TikTok)
-  bonus: { label: 'Bonus',  icon: Trophy, color: '#EAB308' }, // dorado (premios)
+const KIND_META: Record<
+  ExtraIncomeKind,
+  {
+    label: string
+    icon: typeof Gift
+    color: string
+    gradient: string
+    sublabel: string
+  }
+> = {
+  cupon: {
+    label: 'Cupones',
+    icon: Gift,
+    color: '#8B5CF6',
+    gradient: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+    sublabel: 'Crédito de TikTok Shop',
+  },
+  bonus: {
+    label: 'Bonus',
+    icon: Trophy,
+    color: '#EAB308',
+    gradient: 'linear-gradient(135deg, #FACC15 0%, #EAB308 100%)',
+    sublabel: 'Premios en efectivo',
+  },
 }
 
 export function ExtraIncomeSection({ range }: Props) {
   const { extraIncome, createExtraIncome, deleteExtraIncome } = useData()
   const [open, setOpen] = useState(false)
 
-  // Filtrar por período actual
   const items = useMemo(() => {
     return extraIncome
       .filter((x) => {
@@ -34,61 +54,47 @@ export function ExtraIncomeSection({ range }: Props) {
 
   const totalCupon = items.filter((x) => x.kind === 'cupon').reduce((a, x) => a + x.amount, 0)
   const totalBonus = items.filter((x) => x.kind === 'bonus').reduce((a, x) => a + x.amount, 0)
-  const total = totalCupon + totalBonus
+  const cuponCount = items.filter((x) => x.kind === 'cupon').length
+  const bonusCount = items.filter((x) => x.kind === 'bonus').length
 
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
-        <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-            Ingresos extra
-          </h2>
-          {items.length > 0 && (
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
-              <span className="text-muted">
-                Cupones: <span className="font-semibold tnum" style={{ color: KIND_META.cupon.color }}>{eur(totalCupon)}</span>
-              </span>
-              <span className="opacity-30">·</span>
-              <span className="text-muted">
-                Bonus: <span className="font-semibold tnum" style={{ color: KIND_META.bonus.color }}>{eur(totalBonus)}</span>
-              </span>
-              <span className="opacity-30">·</span>
-              <span className="font-semibold tnum text-accent">{eur(total)}</span>
-            </div>
-          )}
-        </div>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+          Ingresos extra
+        </h2>
         <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
           <Plus size={14} /> Añadir
         </Button>
       </div>
 
-      <div className="surface rounded-2xl p-4">
-        {items.length === 0 ? (
-          <div className="py-6 text-center text-sm text-muted">
-            Sin ingresos extra en este período.
-          </div>
-        ) : (
-          <>
-            <ul className="divide-y hairline">
-              <AnimatePresence initial={false}>
-                {items.map((x) => (
-                  <ExtraIncomeRow
-                    key={x.id}
-                    item={x}
-                    onDelete={() => deleteExtraIncome(x.id)}
-                  />
-                ))}
-              </AnimatePresence>
-            </ul>
-            {totalCupon > 0 && (
-              <p className="mt-3 border-t hairline pt-3 text-[11px] text-muted leading-snug">
-                Los cupones son crédito de TikTok Shop y no se suman a tus ingresos totales,
-                ya que solo pueden gastarse dentro de la plataforma.
-              </p>
-            )}
-          </>
-        )}
+      {/* Hero: dos cards grandes con gradient */}
+      <div className="grid grid-cols-2 gap-3">
+        <HeroCard kind="cupon" total={totalCupon} count={cuponCount} />
+        <HeroCard kind="bonus" total={totalBonus} count={bonusCount} />
       </div>
+
+      {/* Lista compacta abajo */}
+      {items.length > 0 && (
+        <div className="mt-3 surface rounded-2xl">
+          <ul className="divide-y hairline">
+            <AnimatePresence initial={false}>
+              {items.map((x) => (
+                <ExtraIncomeRow
+                  key={x.id}
+                  item={x}
+                  onDelete={() => deleteExtraIncome(x.id)}
+                />
+              ))}
+            </AnimatePresence>
+          </ul>
+          {totalCupon > 0 && (
+            <p className="border-t hairline px-4 py-2.5 text-[11px] text-muted leading-snug">
+              Los cupones no se suman a tus ingresos totales, ya que solo pueden gastarse dentro de TikTok Shop.
+            </p>
+          )}
+        </div>
+      )}
 
       <ExtraIncomeFormModal
         open={open}
@@ -102,6 +108,100 @@ export function ExtraIncomeSection({ range }: Props) {
   )
 }
 
+function HeroCard({
+  kind,
+  total,
+  count,
+}: {
+  kind: ExtraIncomeKind
+  total: number
+  count: number
+}) {
+  const meta = KIND_META[kind]
+  const Icon = meta.icon
+  const empty = count === 0
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl p-4 sm:p-5"
+      style={{
+        background: empty ? undefined : meta.gradient,
+        boxShadow: empty ? undefined : `0 8px 24px -8px ${meta.color}50`,
+      }}
+    >
+      {empty && (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(135deg, ${meta.color}10 0%, ${meta.color}05 100%)`,
+            border: `1px dashed ${meta.color}40`,
+            borderRadius: '1rem',
+          }}
+        />
+      )}
+
+      {!empty && (
+        <>
+          <div
+            className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full opacity-25 blur-2xl"
+            style={{ backgroundColor: '#FFFFFF' }}
+          />
+          <div
+            className="pointer-events-none absolute -bottom-6 -left-6 h-20 w-20 rounded-full opacity-15 blur-2xl"
+            style={{ backgroundColor: '#000000' }}
+          />
+        </>
+      )}
+
+      <div className="relative flex items-start justify-between">
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+            empty ? '' : 'bg-white/20 backdrop-blur-sm'
+          }`}
+          style={empty ? { backgroundColor: `${meta.color}1A`, color: meta.color } : undefined}
+        >
+          <Icon size={20} className={empty ? '' : 'text-white'} strokeWidth={2.2} />
+        </div>
+        {count > 0 && (
+          <span
+            className={`text-[10px] font-bold uppercase tracking-wider ${
+              empty ? '' : 'text-white/80'
+            }`}
+            style={empty ? { color: meta.color } : undefined}
+          >
+            {count} {count === 1 ? 'reg' : 'regs'}
+          </span>
+        )}
+      </div>
+
+      <div className="relative mt-3">
+        <div
+          className={`text-xs font-medium uppercase tracking-wide ${
+            empty ? '' : 'text-white/80'
+          }`}
+          style={empty ? { color: meta.color, opacity: 0.85 } : undefined}
+        >
+          {meta.label}
+        </div>
+        <div
+          className={`mt-0.5 text-2xl font-bold tnum tracking-tight ${
+            empty ? '' : 'text-white drop-shadow-sm'
+          }`}
+          style={empty ? { color: meta.color, opacity: 0.4 } : undefined}
+        >
+          {empty ? '0 €' : eur(total)}
+        </div>
+        <div
+          className={`mt-0.5 text-[11px] ${empty ? 'text-muted' : 'text-white/75'}`}
+        >
+          {meta.sublabel}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 function ExtraIncomeRow({ item, onDelete }: { item: ExtraIncome; onDelete: () => void }) {
   const meta = KIND_META[item.kind]
   const Icon = meta.icon
@@ -111,17 +211,17 @@ function ExtraIncomeRow({ item, onDelete }: { item: ExtraIncome; onDelete: () =>
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, x: -10 }}
-      className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0"
+      className="flex items-center gap-3 px-4 py-3"
     >
       <span
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
         style={{ backgroundColor: `${meta.color}1A`, color: meta.color }}
       >
-        <Icon size={16} />
+        <Icon size={15} />
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold">{meta.label}</span>
+          <span className="text-sm font-semibold">{item.kind === 'cupon' ? 'Cupón' : 'Bonus'}</span>
           <span className="text-xs text-muted tnum">
             {formatShort(item.day_date)}
           </span>
@@ -211,10 +311,11 @@ function ExtraIncomeFormModal({
               const Icon = meta.icon
               const active = kind === k
               return (
-                <button
+                <motion.button
                   key={k}
                   type="button"
                   onClick={() => setKind(k)}
+                  whileTap={{ scale: 0.97 }}
                   className="flex items-center gap-2 rounded-xl p-3 text-left transition-all"
                   style={{
                     backgroundColor: active ? `${meta.color}1A` : undefined,
@@ -233,9 +334,9 @@ function ExtraIncomeFormModal({
                     className="text-sm font-bold"
                     style={{ color: active ? meta.color : undefined }}
                   >
-                    {meta.label}
+                    {k === 'cupon' ? 'Cupón' : 'Bonus'}
                   </span>
-                </button>
+                </motion.button>
               )
             })}
           </div>

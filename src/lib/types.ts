@@ -3,6 +3,8 @@ export type ProductStatus =
   | 'recibido'
   | 'testeando'
   | 'activo'
+  | 'muestra'
+  | 'carruseles'
   | 'descartado'
 
 export interface Product {

@@ -21,7 +21,7 @@ export function IncomeKpis({ current, previous, bonusTotal, prevBonusTotal }: Pr
   const items = [
     { label: 'GMV total', value: eur(current.gmv), cur: current.gmv, prev: previous?.gmv, accent: 'text-brand', isCurrency: true },
     { label: 'Ingresos totales', value: eur(totalIncome), cur: totalIncome, prev: previous ? prevTotalIncome : undefined, accent: 'text-accent', isCurrency: true },
-    { label: 'Unidades vendidas', value: num(current.units), cur: current.units, prev: previous?.units, isCurrency: false },
+    { label: 'Ventas totales', value: num(current.units), cur: current.units, prev: previous?.units, isCurrency: false },
     { label: 'Publicaciones subidas', value: num(current.videos), cur: current.videos, prev: previous?.videos, isCurrency: false },
   ]
 

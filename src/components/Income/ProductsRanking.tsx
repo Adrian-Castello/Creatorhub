@@ -61,7 +61,7 @@ export function ProductsRanking({ rows }: { rows: ProductRankRow[] }) {
                   {r.product.name}
                 </div>
                 <div className="mt-0.5 text-xs text-muted tnum">
-                  {num(r.units)} unidades
+                  {num(r.units)} {r.units === 1 ? 'venta' : 'ventas'}
                 </div>
               </div>
 

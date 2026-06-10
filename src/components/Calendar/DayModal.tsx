@@ -9,7 +9,7 @@ import { VideoTypeModal } from '../Home/VideoTypeModal'
 import { Confetti } from '../ui/Confetti'
 import { useData } from '../../hooks/useData'
 import { fromKey, formatLongDate } from '../../lib/dates'
-import { saleCommission } from '../../lib/calculations'
+import { goalForDay, saleCommission } from '../../lib/calculations'
 import { eur } from '../../lib/format'
 import type { Product } from '../../lib/types'
 
@@ -28,6 +28,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
     sales,
     dayViews,
     settings,
+    goalHistory,
     setVideo,
     removeVideo,
     upsertSale,
@@ -36,7 +37,7 @@ export function DayModal({ open, dayKey, onClose }: Props) {
     deleteDayView,
   } = useData()
 
-  const goal = settings.daily_video_goal
+  const goal = dayKey ? goalForDay(dayKey, goalHistory, settings.daily_video_goal) : settings.daily_video_goal
   const [confettiFire, setConfettiFire] = useState(0)
   const [salePickerOpen, setSalePickerOpen] = useState(false)
   const [viewsPickerOpen, setViewsPickerOpen] = useState(false)

@@ -22,7 +22,7 @@ const MODES: { value: CalendarMode; label: string }[] = [
 ]
 
 export function CalendarPage() {
-  const { sales, videos, products, dayViews, settings } = useData()
+  const { sales, videos, products, dayViews, settings, goalHistory } = useData()
   const { isDark } = useThemeContext()
 
   const [anchor, setAnchor] = useState(() => new Date())
@@ -150,7 +150,8 @@ export function CalendarPage() {
       <MonthGrid
         monthAnchor={anchor}
         direction={direction}
-        goal={settings.daily_video_goal}
+        defaultGoal={settings.daily_video_goal}
+        goalHistory={goalHistory}
         sales={sales}
         videos={videos}
         products={products}

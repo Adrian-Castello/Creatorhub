@@ -95,6 +95,19 @@ create table if not exists public.extra_income (
 create index if not exists idx_extra_income_day_date on public.extra_income (day_date);
 
 -- -------------------------------------------------------------
+-- Tabla: goal_history
+-- Histórico de cambios del objetivo diario de publicaciones.
+-- -------------------------------------------------------------
+create table if not exists public.goal_history (
+  id          uuid primary key default gen_random_uuid(),
+  day_date    date not null,
+  goal        int not null check (goal > 0),
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists idx_goal_history_day_date on public.goal_history (day_date);
+
+-- -------------------------------------------------------------
 -- Tabla: app_settings (singleton, id = 1)
 -- -------------------------------------------------------------
 create table if not exists public.app_settings (
@@ -124,6 +137,7 @@ alter table public.sales        enable row level security;
 alter table public.day_notes    enable row level security;
 alter table public.day_views    enable row level security;
 alter table public.extra_income enable row level security;
+alter table public.goal_history enable row level security;
 alter table public.app_settings enable row level security;
 
 -- products
@@ -148,6 +162,10 @@ create policy "anon_all_day_views" on public.day_views
 
 -- extra_income
 create policy "anon_all_extra_income" on public.extra_income
+  for all to anon using (true) with check (true);
+
+-- goal_history
+create policy "anon_all_goal_history" on public.goal_history
   for all to anon using (true) with check (true);
 
 -- app_settings

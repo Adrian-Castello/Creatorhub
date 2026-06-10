@@ -1,6 +1,7 @@
 import type {
   DateRange,
   DayView,
+  GoalHistory,
   Granularity,
   PeriodBucket,
   Product,
@@ -275,4 +276,27 @@ export function productViralDays(
   threshold: number = 100_000,
 ): number {
   return dayViews.filter((v) => v.product_id === productId && v.views >= threshold).length
+}
+
+/**
+ * Devuelve el objetivo diario de publicaciones vigente para el día `dayKey`.
+ *
+ * Cada vez que el usuario cambia el objetivo en Ajustes, se inserta un registro
+ * en `goal_history` con la fecha desde la que aplica. Para resolver el objetivo
+ * de un día se busca el registro más reciente cuyo `day_date <= dayKey`.
+ *
+ * Si no hay ningún registro (caso muy inicial), se usa `fallback`.
+ */
+export function goalForDay(
+  dayKey: string,
+  history: GoalHistory[],
+  fallback: number,
+): number {
+  let best: GoalHistory | null = null
+  for (const h of history) {
+    if (h.day_date <= dayKey) {
+      if (!best || h.day_date > best.day_date) best = h
+    }
+  }
+  return best ? best.goal : fallback
 }

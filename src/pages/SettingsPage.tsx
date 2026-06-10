@@ -4,7 +4,9 @@ import type { LucideIcon } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { useSettings } from '../hooks/useSettings'
+import { useData } from '../hooks/useData'
 import { useThemeContext } from '../hooks/themeContext'
+import { todayKey } from '../lib/dates'
 import type { ThemeMode } from '../hooks/useTheme'
 
 const themeOptions: { value: ThemeMode; label: string; icon: LucideIcon }[] = [
@@ -15,6 +17,7 @@ const themeOptions: { value: ThemeMode; label: string; icon: LucideIcon }[] = [
 
 export function SettingsPage() {
   const { settings, updateSettings } = useSettings()
+  const { setDailyGoalFrom } = useData()
   const { mode, setMode } = useThemeContext()
 
   const [name, setName] = useState(settings.user_name ?? '')
@@ -33,9 +36,21 @@ export function SettingsPage() {
     setDirty(nameChanged || goalChanged)
   }, [name, goal, settings])
 
-  function save() {
+  async function save() {
     const g = Math.min(20, Math.max(1, parseInt(goal) || 5))
-    updateSettings({ user_name: name.trim() || null, daily_video_goal: g })
+    const nameValue = name.trim() || null
+    const goalChanged = g !== settings.daily_video_goal
+    // Si solo cambió el nombre, no toques el objetivo (no metas registro nuevo)
+    if (!goalChanged) {
+      updateSettings({ user_name: nameValue })
+      return
+    }
+    // Cambio de objetivo: se guarda en goal_history aplicando desde HOY,
+    // los días anteriores conservan el objetivo que tuvieran.
+    if (nameValue !== (settings.user_name ?? null)) {
+      updateSettings({ user_name: nameValue })
+    }
+    await setDailyGoalFrom(todayKey(), g)
   }
 
   const stickyBar = dirty ? (

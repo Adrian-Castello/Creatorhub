@@ -1,7 +1,7 @@
 import { CheckCircle2, Coins, Eye, TrendingUp } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useData } from '../../hooks/useData'
-import { dayTotals, dayColorLevel } from '../../lib/calculations'
+import { dayTotals, dayColorLevel, goalForDay } from '../../lib/calculations'
 import { COLOR_LEVELS } from '../../lib/constants'
 import { eur, num } from '../../lib/format'
 import { useThemeContext } from '../../hooks/themeContext'
@@ -11,9 +11,9 @@ interface Props {
 }
 
 export function DayKpis({ dayKey }: Props) {
-  const { sales, videos, products, dayViews, settings } = useData()
+  const { sales, videos, products, dayViews, settings, goalHistory } = useData()
   const { isDark } = useThemeContext()
-  const goal = settings.daily_video_goal
+  const goal = goalForDay(dayKey, goalHistory, settings.daily_video_goal)
 
   const totals = dayTotals(dayKey, sales, products, videos)
   const level = dayColorLevel(totals.videos, goal)

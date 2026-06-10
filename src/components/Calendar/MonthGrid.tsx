@@ -1,12 +1,16 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import type { DayView, Product, Sale, Video } from '../../lib/types'
-import { monthGridDays, WEEKDAY_SHORT } from '../../lib/dates'
+import type { DayView, GoalHistory, Product, Sale, Video } from '../../lib/types'
+import { monthGridDays, toKey, WEEKDAY_SHORT } from '../../lib/dates'
+import { goalForDay } from '../../lib/calculations'
 import { DayCell, type CalendarMode } from './DayCell'
 
 interface Props {
   monthAnchor: Date
   direction: number
-  goal: number
+  /** Objetivo por defecto si no hay ningún registro histórico aún */
+  defaultGoal: number
+  /** Histórico de cambios de objetivo (vigente desde cada fecha) */
+  goalHistory: GoalHistory[]
   sales: Sale[]
   videos: Video[]
   products: Product[]
@@ -20,7 +24,8 @@ interface Props {
 export function MonthGrid({
   monthAnchor,
   direction,
-  goal,
+  defaultGoal,
+  goalHistory,
   sales,
   videos,
   products,
@@ -57,22 +62,25 @@ export function MonthGrid({
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="grid grid-cols-7 gap-1.5 sm:gap-2"
           >
-            {days.map((d) => (
-              <DayCell
-                key={d.toISOString()}
-                date={d}
-                monthAnchor={monthAnchor}
-                goal={goal}
-                sales={sales}
-                videos={videos}
-                products={products}
-                dayViews={dayViews}
-                mode={mode}
-                isDark={isDark}
-                selectedKey={selectedKey}
-                onOpen={onOpenDay}
-              />
-            ))}
+            {days.map((d) => {
+              const goalThisDay = goalForDay(toKey(d), goalHistory, defaultGoal)
+              return (
+                <DayCell
+                  key={d.toISOString()}
+                  date={d}
+                  monthAnchor={monthAnchor}
+                  goal={goalThisDay}
+                  sales={sales}
+                  videos={videos}
+                  products={products}
+                  dayViews={dayViews}
+                  mode={mode}
+                  isDark={isDark}
+                  selectedKey={selectedKey}
+                  onOpen={onOpenDay}
+                />
+              )
+            })}
           </motion.div>
         </AnimatePresence>
       </div>

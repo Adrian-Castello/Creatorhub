@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown, Gift, Plus, Trash2, Trophy } from 'lucide-react'
+import { Gift, Plus, Trash2, Trophy } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
@@ -184,15 +184,6 @@ function HeroCard({
         >
           <Icon size={20} className={empty ? '' : 'text-white'} strokeWidth={2.2} />
         </div>
-        {!empty && (
-          <motion.span
-            animate={{ rotate: expanded ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm text-white"
-          >
-            <ChevronDown size={15} strokeWidth={2.5} />
-          </motion.span>
-        )}
       </div>
 
       <div className="relative mt-3">

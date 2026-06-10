@@ -62,6 +62,13 @@ export interface ExtraIncome {
   created_at: string
 }
 
+export interface GoalHistory {
+  id: string
+  day_date: string // YYYY-MM-DD desde la que aplica
+  goal: number
+  created_at: string
+}
+
 export interface AppSettings {
   id: number
   daily_video_goal: number

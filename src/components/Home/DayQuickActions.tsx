@@ -5,6 +5,7 @@ import { Button } from '../ui/Button'
 import { ProductPickerModal } from '../ui/ProductPickerModal'
 import { VideoTypeModal } from './VideoTypeModal'
 import { useData } from '../../hooks/useData'
+import { goalForDay } from '../../lib/calculations'
 import type { VideoType } from '../../lib/types'
 
 interface Props {
@@ -13,8 +14,8 @@ interface Props {
 }
 
 export function DayQuickActions({ dayKey, onOpenDay }: Props) {
-  const { products, videos, settings, setVideo, removeVideo } = useData()
-  const goal = settings.daily_video_goal
+  const { products, videos, settings, goalHistory, setVideo, removeVideo } = useData()
+  const goal = goalForDay(dayKey, goalHistory, settings.daily_video_goal)
   const [pickerSlot, setPickerSlot] = useState<number | null>(null)
   // Tras elegir producto, abrir selector de tipo (video/carrusel) con esto pendiente
   const [pendingPick, setPendingPick] = useState<{ slot: number; productId: string | null } | null>(null)

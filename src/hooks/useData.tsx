@@ -13,6 +13,7 @@ import type {
   AppSettings,
   DayNote,
   DayView,
+  GoalHistory,
   Product,
   ProductStatus,
   Sale,
@@ -28,6 +29,7 @@ interface DataState {
   notes: Record<string, DayNote>
   dayViews: DayView[]
   extraIncome: ExtraIncome[]
+  goalHistory: GoalHistory[]
   settings: AppSettings
   loading: boolean
   configured: boolean
@@ -66,6 +68,9 @@ interface DataState {
   // Settings
   updateSettings: (patch: Partial<AppSettings>) => Promise<void>
 
+  /** Cambia el objetivo diario de publicaciones a partir del día `fromKey`. */
+  setDailyGoalFrom: (fromKey: string, goal: number) => Promise<void>
+
   // Extra income (cupones, bonus)
   createExtraIncome: (
     input: { day_date: string; kind: ExtraIncomeKind; amount: number; description: string },
@@ -91,6 +96,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<Record<string, DayNote>>({})
   const [dayViews, setDayViews] = useState<DayView[]>([])
   const [extraIncome, setExtraIncome] = useState<ExtraIncome[]>([])
+  const [goalHistory, setGoalHistory] = useState<GoalHistory[]>([])
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [loading, setLoading] = useState(true)
 
@@ -104,6 +110,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setNotes(demo.demoNotes)
       setDayViews(demo.demoDayViews ?? [])
       setExtraIncome(demo.demoExtraIncome ?? [])
+      setGoalHistory(demo.demoGoalHistory ?? [])
       setSettings(demo.demoSettings)
       setLoading(false)
       return
@@ -114,13 +121,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true)
     try {
-      const [p, v, s, n, dv, ei, st] = await Promise.all([
+      const [p, v, s, n, dv, ei, gh, st] = await Promise.all([
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('videos').select('*'),
         supabase.from('sales').select('*'),
         supabase.from('day_notes').select('*'),
         supabase.from('day_views').select('*'),
         supabase.from('extra_income').select('*'),
+        supabase.from('goal_history').select('*'),
         supabase.from('app_settings').select('*').eq('id', 1).maybeSingle(),
       ])
       if (p.error) throw p.error
@@ -146,6 +154,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setExtraIncome([])
       } else {
         setExtraIncome((ei.data as ExtraIncome[]) ?? [])
+      }
+      if (gh.error) {
+        console.warn('goal_history no disponible — ejecuta supabase-migration-v8.sql')
+        setGoalHistory([])
+      } else {
+        setGoalHistory((gh.data as GoalHistory[]) ?? [])
       }
       if (st.data) setSettings(st.data as AppSettings)
     } catch (e: any) {
@@ -452,6 +466,60 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [settings, push],
   )
 
+  // ---- Goal history ----
+  // Inserta un nuevo punto de cambio del objetivo a partir de `fromKey`.
+  // Si ya existe un registro con la misma fecha, lo actualiza.
+  const setDailyGoalFrom = useCallback<DataState['setDailyGoalFrom']>(
+    async (fromKey, goal) => {
+      if (goal <= 0) return
+      const prev = goalHistory
+      // optimistic
+      const existing = goalHistory.find((g) => g.day_date === fromKey)
+      const optimistic: GoalHistory = existing
+        ? { ...existing, goal }
+        : { id: 'tmp-' + fromKey, day_date: fromKey, goal, created_at: new Date().toISOString() }
+      setGoalHistory((cur) =>
+        existing
+          ? cur.map((g) => (g.id === existing.id ? optimistic : g))
+          : [...cur, optimistic],
+      )
+      try {
+        if (existing) {
+          const { data, error } = await supabase
+            .from('goal_history')
+            .update({ goal })
+            .eq('id', existing.id)
+            .select()
+            .single()
+          if (error) throw error
+          setGoalHistory((cur) =>
+            cur.map((g) => (g.id === existing.id ? (data as GoalHistory) : g)),
+          )
+        } else {
+          const { data, error } = await supabase
+            .from('goal_history')
+            .insert({ day_date: fromKey, goal })
+            .select()
+            .single()
+          if (error) throw error
+          setGoalHistory((cur) =>
+            cur.map((g) => (g.id === optimistic.id ? (data as GoalHistory) : g)),
+          )
+        }
+        // También actualizamos app_settings para que el "objetivo actual"
+        // visible en Ajustes refleje el último cambio.
+        await supabase
+          .from('app_settings')
+          .upsert({ id: 1, daily_video_goal: goal, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+        setSettings((s) => ({ ...s, daily_video_goal: goal }))
+      } catch (e: any) {
+        setGoalHistory(prev)
+        push('Error al guardar el objetivo: ' + (e.message ?? ''), 'error')
+      }
+    },
+    [goalHistory, push],
+  )
+
   // ---- Extra income (cupones, bonus) ----
   const createExtraIncome = useCallback<DataState['createExtraIncome']>(
     async (input) => {
@@ -517,6 +585,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         notes,
         dayViews,
         extraIncome,
+        goalHistory,
         settings,
         loading,
         configured: supabaseConfigured || import.meta.env.VITE_DEMO === '1',
@@ -532,6 +601,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         deleteDayView,
         saveNote,
         updateSettings,
+        setDailyGoalFrom,
         createExtraIncome,
         updateExtraIncome,
         deleteExtraIncome,

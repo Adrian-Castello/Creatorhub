@@ -19,7 +19,7 @@ const FILTER_OPTIONS: { value: Filter; label: string; color?: string }[] = [
   { value: 'solicitado', label: 'Solicitados', color: STATUS_COLORS.solicitado },
   { value: 'recibido', label: 'Recibidos', color: STATUS_COLORS.recibido },
   { value: 'muestra', label: 'Muestras', color: STATUS_COLORS.muestra },
-  { value: 'testeando', label: 'Testeándose', color: STATUS_COLORS.testeando },
+  { value: 'testeando', label: 'Testeos', color: STATUS_COLORS.testeando },
   { value: 'activo', label: 'Activos', color: STATUS_COLORS.activo },
   { value: 'descartado', label: 'Descartados', color: STATUS_COLORS.descartado },
 ]

@@ -483,6 +483,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
           ? cur.map((g) => (g.id === existing.id ? optimistic : g))
           : [...cur, optimistic],
       )
+
+      let goalHistorySaved = true
       try {
         if (existing) {
           const { data, error } = await supabase
@@ -506,15 +508,38 @@ export function DataProvider({ children }: { children: ReactNode }) {
             cur.map((g) => (g.id === optimistic.id ? (data as GoalHistory) : g)),
           )
         }
-        // También actualizamos app_settings para que el "objetivo actual"
-        // visible en Ajustes refleje el último cambio.
+      } catch (e: any) {
+        // ¿La tabla no existe todavía? Avisa al usuario para ejecutar la migración
+        // y sigue con el guardado en app_settings (no rompemos toda la app).
+        goalHistorySaved = false
+        setGoalHistory(prev)
+        const msg = (e?.message ?? '').toLowerCase()
+        if (msg.includes('goal_history') || msg.includes('not find')) {
+          push(
+            'Para guardar histórico de objetivos, ejecuta la migración v8 en Supabase.',
+            'error',
+          )
+        } else {
+          push('Error al guardar el histórico: ' + (e.message ?? ''), 'error')
+        }
+      }
+
+      // Siempre intentamos actualizar app_settings con el objetivo "actual"
+      // así, aunque falle goal_history, el valor que ves en Ajustes y los días
+      // futuros usarán el nuevo objetivo.
+      try {
         await supabase
           .from('app_settings')
-          .upsert({ id: 1, daily_video_goal: goal, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+          .upsert(
+            { id: 1, daily_video_goal: goal, updated_at: new Date().toISOString() },
+            { onConflict: 'id' },
+          )
         setSettings((s) => ({ ...s, daily_video_goal: goal }))
+        if (goalHistorySaved) {
+          push('Objetivo actualizado', 'success')
+        }
       } catch (e: any) {
-        setGoalHistory(prev)
-        push('Error al guardar el objetivo: ' + (e.message ?? ''), 'error')
+        push('Error al guardar ajustes: ' + (e.message ?? ''), 'error')
       }
     },
     [goalHistory, push],
